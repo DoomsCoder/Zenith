@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+    <!-- 1. Glow Effect for the Pointer Dot (Simulating Figma Blur 20, Spread 28) -->
+    <path
+        android:pathData="M256,126m-64,0a64,64 0,1 1,128 0a64,64 0,1 1,-128 0">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:centerX="256"
+                android:centerY="126"
+                android:gradientRadius="64"
+                android:type="radial">
+                <item android:offset="0" android:color="#CC818CF8"/>
+                <item android:offset="1" android:color="#00818CF8"/>
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- 2. Shadow for Vertical Line (Simulating Figma Y:4, Blur:8) -->
+    <path
+        android:pathData="M256,147L256,397"
+        android:strokeWidth="10"
+        android:strokeColor="#4D818CF8"
+        android:strokeLineCap="round"/>
+
+    <!-- 3. Main Pointer Dot (The Solid Part) -->
+    <path
+        android:pathData="M256,126m-8,0a8,8 0,1 1,16 0a8,8 0,1 1,-16 0"
+        android:fillColor="#F8FAFC"/>
+
+    <!-- 4. Main Vertical Line -->
+    <path
+        android:pathData="M256,143L256,393"
+        android:strokeWidth="4"
+        android:strokeColor="#ffffff"
+        android:strokeLineCap="round"/>
+
+    <!-- 5. Main Horizontal Cross Line -->
+    <path
+        android:pathData="M198,208L314,208"
+        android:strokeWidth="4"
+        android:strokeColor="#ffffff"
+        android:strokeLineCap="round"/>
+</vector>
