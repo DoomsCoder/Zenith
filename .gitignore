@@ -1,14 +1,15 @@
+# Android Studio / IntelliJ Shared Settings
+.idea/
+!.idea/vcs.xml
+!.idea/runConfigurations/
+!.idea/inspectionProfiles/
+
+# Ignore local files
 *.iml
 .gradle
 /local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
 /build
+.DS_Store
 /captures
 .externalNativeBuild
 .cxx
