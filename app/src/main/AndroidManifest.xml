@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <!-- Basic Foreground Service Permission -->
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"
+        tools:ignore="ForegroundServicesPolicy" />
+    
+    <!-- Correct permission for special utility cases like Zenith -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
+    
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:resizeableActivity="false"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Zenith">
+
+        <service
+            android:name=".service.FocusService"
+            android:foregroundServiceType="specialUse"
+            android:exported="false">
+
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_TYPE"
+                android:value="Focus tracking and physical pickup detection for deep-work sessions."/>
+        </service>
+
+        <activity
+            android:name=".MainActivity"
+            android:resizeableActivity="false"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.Zenith"
+            tools:ignore="NonResizeableActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+            
+    </application>
+
+</manifest>
