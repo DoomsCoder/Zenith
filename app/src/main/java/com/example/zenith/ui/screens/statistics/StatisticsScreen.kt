@@ -1,5 +1,6 @@
 package com.example.zenith.ui.screens.statistics
 
+import android.widget.Space
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -144,6 +145,18 @@ fun StatisticsScreen() {
                     selectedColumnIndex = chartSelectedIndex,
                     onColumnSelected = {newIndex -> chartSelectedIndex = newIndex}
                     )
+                Spacer(Modifier.height(32.dp))
+            }
+
+            item {
+                val allTimeMetrics = AllTimeMetrics(
+                    totalSessions = 47,
+                    totalHours = 23.5f,
+                    completionRate = 84,
+                    bestStreak = 15
+                )
+                AllTelemetrySection(metrics = allTimeMetrics)
+                Spacer(Modifier.height(48.dp))
             }
         }
 
