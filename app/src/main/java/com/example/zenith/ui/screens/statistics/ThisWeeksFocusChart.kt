@@ -1,6 +1,11 @@
 package com.example.zenith.ui.screens.statistics
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -20,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -41,14 +47,10 @@ import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
-import com.patrykandpatrick.vico.compose.common.component.rememberLineComponent
 import com.patrykandpatrick.vico.compose.common.component.rememberTextComponent
-import com.patrykandpatrick.vico.core.cartesian.CartesianDrawingContext
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.columnSeries
 import com.patrykandpatrick.vico.core.cartesian.layer.ColumnCartesianLayer
-import com.patrykandpatrick.vico.core.cartesian.marker.CartesianMarker
-import com.patrykandpatrick.vico.core.cartesian.marker.CartesianMarkerVisibilityListener
 import com.patrykandpatrick.vico.core.common.component.LineComponent
 import com.patrykandpatrick.vico.core.common.data.ExtraStore
 import java.time.LocalDate
@@ -75,12 +77,19 @@ fun ThisWeeksFocusChart(
     var selectedColumnIndex by remember { mutableStateOf<Int?>(null) }
     var chartSize by remember { mutableStateOf(IntSize.Zero) }
 
-    //Sync data with Vico's Model Provider
+    // Sync data with Vico's Model Provider
     LaunchedEffect(metrics) {
         modelProducer.runTransaction {
             columnSeries {
-                // Requirement: 0 minutes shows a tiny bar (0.8f) so it doesn't disappear
-                series(metrics.map { max(0.8f, it.totalMinutes.toFloat()) })
+                // We split the data into 7 separate series.
+                // Each series only contains the value for its specific day (null for others).
+                metrics.forEachIndexed { i, m ->
+                    series(
+                        metrics.indices.map { j ->
+                            if (i == j) max(0.8f, m.totalMinutes.toFloat()) else 0f
+                        }
+                    )
+                }
             }
             extras { it[datesKey] = metrics.map { m -> m.date } }
         }
@@ -120,100 +129,128 @@ fun ThisWeeksFocusChart(
 
         Spacer(Modifier.height(24.dp))
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(40.dp),
+        AnimatedVisibility(
+            visible = selectedColumnIndex != null,
+            enter = fadeIn() + slideInVertically(),
+            exit = fadeOut() + slideOutVertically()
+        ) {
+            val m = selectedColumnIndex?.let { metrics.getOrNull(it) }
+            if (m != null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp),
+                    contentAlignment = Alignment.Center
+                ){
 
-            contentAlignment = Alignment.Center
-        ){
-            if (selectedColumnIndex != null) {
-                val m = metrics.getOrNull(selectedColumnIndex!!)
-                if (m != null) {
-                    val dateStr = m.date.format(DateTimeFormatter.ofPattern("MMM dd"))
-                    Surface(
-                        color = Color(0xFF1A1A1A), // Dark Charcoal
-                        shape = RoundedCornerShape(6.dp),
-                        border = BorderStroke(1.dp, Color.DarkGray.copy(alpha = 0.5f))
-                    ) {
-                        Text(
-                            text = "$dateStr · ${m.totalMinutes} min · ${m.sessionCount} sessions",
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                fontFamily = FontFamily.Monospace,
-                                color = Color.White,
-                                fontWeight = FontWeight.Medium,
-                                letterSpacing = 0.5.sp
+                        Surface(
+                            color = Color(0xFF1A1A1A), // Dark Charcoal
+                            shape = RoundedCornerShape(6.dp),
+                            border = BorderStroke(1.dp, Color.DarkGray.copy(alpha = 0.5f))
+                        ) {
+                            Text(
+                                text = buildString {
+                                    val dateStr = m.date.format(DateTimeFormatter.ofPattern("MMM dd"))
+                                    append("$dateStr · ${m.totalMinutes} min · ${m.sessionCount} sessions")
+                                },
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontFamily = FontFamily.Monospace,
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Medium,
+                                    letterSpacing = 0.5.sp
+                                )
                             )
-                        )
-                    }
+                        }
                 }
             }
         }
 
         // We create the components list here so they react to 'selectedColumnIndex'
-
-
         // Chart Section
-        CartesianChartHost(
-            chart = rememberCartesianChart(
+            CartesianChartHost(
+                chart = rememberCartesianChart(
                     rememberColumnCartesianLayer(
                         columnProvider = ColumnCartesianLayer.ColumnProvider.series(
                             remember(selectedColumnIndex) {
                                 metrics.mapIndexed { index, _ ->
                                     val isToday = index == 6
-                                    val baseColor = if (isToday) Color(0xFF6366F1) else SoftIndigo
+                                    val isSelected = selectedColumnIndex == index
+                                    val nothingSelected = selectedColumnIndex == null
 
-                                    // Fading Logic
-                                    val finalAlpha = when {
-                                        selectedColumnIndex == null -> 1.0f
-                                        selectedColumnIndex == index -> 1.0f
-                                        else -> 0.3f
+                                    val color = when {
+
+                                        nothingSelected -> {
+                                            if (isToday) Color(0xFF6366F1)
+                                            else SoftIndigo
+                                        }
+
+                                        isSelected -> {
+                                            if (isToday) Color(0xFF6366F1)
+                                            else Color(0xFF7C7FF5)
+                                        }
+
+                                        else -> {
+                                            if (isToday) Color(0xFF6366F1).copy(alpha = 0.25f)
+                                            else SoftIndigo.copy(alpha = 0.25f)
+                                        }
                                     }
 
                                     LineComponent(
-                                        color = baseColor.copy(alpha = finalAlpha).toArgb(),
+                                        color = color.toArgb(),
                                         thicknessDp = 34f,
                                         shape = VicoShape.rounded(25,25,0,0),
-                                        strokeThicknessDp = if (isToday) 1f else 0f,
-                                        strokeColor = if (isToday) Color.White.copy(0.2f).toArgb() else 0
+                                        strokeThicknessDp = if (isSelected || isToday) 1f else 0f,
+                                        strokeColor = if (isSelected) {
+                                            Color.White.copy(0.4f).toArgb()
+                                        } else if (isToday) {
+                                            Color.White.copy(0.2f).toArgb()
+                                        } else 0
                                     )
                                 }
                             }
                         ),
+                        mergeMode = { ColumnCartesianLayer.MergeMode.Stacked },
                         columnCollectionSpacing = 8.dp
                     ),
-                // Named Parameter: Bottom Axis
-                bottomAxis = rememberBottomAxis(
-                    guideline = null,
-                    tick = null,
-                    line = null,
-                    valueFormatter = { x, chartValues, _ ->
-                        val date = chartValues.model.extraStore[datesKey][x.toInt()]
-                        if (date == LocalDate.now()) "TODAY" else date.format(DateTimeFormatter.ofPattern("dd"))
-                    },
-                    label = rememberTextComponent(
-                        color = MutedGray.copy(alpha = 0.7f),
-                        textSize = 10.sp
+                    // Named Parameter: Bottom Axis
+                    bottomAxis = rememberBottomAxis(
+                        guideline = null,
+                        tick = null,
+                        line = null,
+                        valueFormatter = { x, chartValues, _ ->
+                            val date = chartValues.model.extraStore[datesKey][x.toInt()]
+                            if (date == LocalDate.now()) "TODAY" else date.format(DateTimeFormatter.ofPattern("dd"))
+                        },
+                        label = rememberTextComponent(
+                            color = MutedGray.copy(alpha = 0.7f),
+                            textSize = 10.sp
+                        )
                     )
-                )
-            ),
-            modelProducer = modelProducer,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(180.dp)
-                .onGloballyPositioned{ chartSize = it.size}
-                .pointerInput(Unit) {
-                    detectTapGestures { offset ->
-                        val segmentWidth = chartSize.width / 7f
-                        val tappedIndex = (offset.x / segmentWidth)
-                            .toInt()
-                            .coerceIn(0, 6)
+                ),
+                modelProducer = modelProducer,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp)
+                    .onGloballyPositioned{ chartSize = it.size}
+                    .pointerInput(selectedColumnIndex) {
+                        detectTapGestures { offset ->
+                            val totalWidth = chartSize.width.toFloat()
 
-                        selectedColumnIndex = if (selectedColumnIndex == tappedIndex) null else tappedIndex
+                            val paddingPx = 4.dp.toPx()
+                            val usableWidth = totalWidth - (paddingPx * 2)
+                            val segmentWidth = usableWidth / 7f
+
+                            val adjustedX = (offset.x - paddingPx).coerceAtLeast(0f)
+                            val tappedIndex = (adjustedX / segmentWidth)
+                                .toInt()
+                                .coerceIn(0, 6)
+
+                            selectedColumnIndex = if (selectedColumnIndex == tappedIndex) null else tappedIndex
+                        }
                     }
-                }
-        )
+            )
+
 
         val totalHrs = metrics.sumOf { it.totalMinutes } / 60f
 
