@@ -25,7 +25,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -69,12 +68,13 @@ private val datesKey = ExtraStore.Key<List<LocalDate>>()
 @SuppressLint("DefaultLocale")
 @Composable
 fun ThisWeeksFocusChart(
-    metrics: List<DailyFocusMetrics>
+    metrics: List<DailyFocusMetrics>,
+    selectedColumnIndex: Int?,
+    onColumnSelected: (Int?) -> Unit
 ) {
     val modelProducer = remember { CartesianChartModelProducer() }
     val activeDays = metrics.count { it.totalMinutes > 0 }
 
-    var selectedColumnIndex by remember { mutableStateOf<Int?>(null) }
     var chartSize by remember { mutableStateOf(IntSize.Zero) }
 
     // Sync data with Vico's Model Provider
@@ -101,7 +101,7 @@ fun ThisWeeksFocusChart(
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
-            ) { selectedColumnIndex = null}
+            ) { onColumnSelected( null ) }
     ) {
         // Header Section
         Row(
@@ -173,7 +173,7 @@ fun ThisWeeksFocusChart(
                     rememberColumnCartesianLayer(
                         columnProvider = ColumnCartesianLayer.ColumnProvider.series(
                             remember(selectedColumnIndex) {
-                                metrics.mapIndexed { index, _ ->
+                                List(metrics.size) { index ->
                                     val isToday = index == 6
                                     val isSelected = selectedColumnIndex == index
                                     val nothingSelected = selectedColumnIndex == null
@@ -246,7 +246,7 @@ fun ThisWeeksFocusChart(
                                 .toInt()
                                 .coerceIn(0, 6)
 
-                            selectedColumnIndex = if (selectedColumnIndex == tappedIndex) null else tappedIndex
+                            onColumnSelected( if (selectedColumnIndex == tappedIndex) null else tappedIndex )
                         }
                     }
             )

@@ -1,6 +1,7 @@
 package com.example.zenith.ui.screens.statistics
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.BottomSheetDefaults
@@ -18,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -29,6 +31,7 @@ import java.time.LocalDate
 @Composable
 fun StatisticsScreen() {
     var showRules by remember { mutableStateOf(false) }
+    var chartSelectedIndex by remember { mutableStateOf<Int?>(null) }
     val sheetState = rememberModalBottomSheetState()
     val dummySessions = listOf(
         SessionDummyData(
@@ -75,7 +78,13 @@ fun StatisticsScreen() {
             .background(Color(0xFF121212)) // DeepSlate Background
     ) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .pointerInput(Unit){
+                    detectTapGestures(
+                        onTap = { chartSelectedIndex = null}
+                    )
+                },
             contentPadding = PaddingValues(
                 start = 24.dp,
                 end = 24.dp,
@@ -130,7 +139,11 @@ fun StatisticsScreen() {
             }
 
             item {
-                ThisWeeksFocusChart(metrics = dummyChartMetrics)
+                ThisWeeksFocusChart(
+                    metrics = dummyChartMetrics,
+                    selectedColumnIndex = chartSelectedIndex,
+                    onColumnSelected = {newIndex -> chartSelectedIndex = newIndex}
+                    )
             }
         }
 
