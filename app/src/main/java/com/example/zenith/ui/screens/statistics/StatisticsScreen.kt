@@ -158,6 +158,11 @@ fun StatisticsScreen() {
                 AllTelemetrySection(metrics = allTimeMetrics)
                 Spacer(Modifier.height(48.dp))
             }
+
+            item {
+                RecentLogSection(onViewAllClick = {/* Handle Navigation */})
+                Spacer(Modifier.height(48.dp))
+            }
         }
 
         if (showRules) {
