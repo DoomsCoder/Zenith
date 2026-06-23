@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -26,7 +28,6 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -92,12 +93,19 @@ fun SessionHistoryScreen(
                 .padding(top = 24.dp, start = 16.dp, end = 24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                    contentDescription = "Back",
-                    tint = Color.White
-                )
+            Surface (
+                onClick = onBackClick,
+                shape = RoundedCornerShape(12.dp),
+                color = Color.White.copy(alpha = 0.03f),
+                border = BorderStroke(1.dp,Color.White.copy(0.08f))
+            ) {
+                Box(modifier = Modifier.size(35.dp), contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White.copy(0.5f)
+                    )
+                }
             }
             Spacer(Modifier.width(8.dp))
             Text(
@@ -106,7 +114,7 @@ fun SessionHistoryScreen(
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 2.sp,
-                    color = Color.White
+                    color = Color.White.copy(0.6f)
                 )
             )
         }
@@ -142,7 +150,7 @@ fun SessionHistoryScreen(
                             borderWidth = 1.dp,
                             selectedBorderWidth = 1.dp
                         ),
-                        shape = RoundedCornerShape(8.dp)
+                        shape = RoundedCornerShape(12.dp)
                     )
                 }
             }
@@ -174,6 +182,14 @@ fun SessionHistoryScreen(
 @Composable
 private fun SessionHistoryCard(item: SessionHistoryItem) {
     var isExpanded by remember {mutableStateOf(false)}
+
+    val getTelemetryColor = { count: Int ->
+        when (count) {
+            0 -> Color(0xFF4CAF50)      // Green
+            in 1..2 -> Color(0xFFFFA726)   // Amber/Orange
+            else -> Color(0xFFEF5350)           // Red
+        }
+    }
 
     Surface(
         modifier = Modifier
@@ -254,7 +270,7 @@ private fun SessionHistoryCard(item: SessionHistoryItem) {
                     HistoryMetricRow(
                         label = "Pickups",
                         value = item.pickups.toString(),
-                        valueColor = if (item.pickups == 0) Color(0xFF34D399) else Color(0xFFEF4444)
+                        valueColor = getTelemetryColor(item.pickups)
                     )
 
                     Spacer(Modifier.height(10.dp))
@@ -263,7 +279,7 @@ private fun SessionHistoryCard(item: SessionHistoryItem) {
                     HistoryMetricRow(
                         label = "App Switches",
                         value = item.appSwitches.toString(),
-                        valueColor = if (item.appSwitches > 0) Color(0xFFF59E0B) else Color.White
+                        valueColor = getTelemetryColor(item.appSwitches)
                     )
 
                     Spacer(Modifier.height(10.dp))
