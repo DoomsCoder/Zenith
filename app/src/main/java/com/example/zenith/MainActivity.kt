@@ -32,6 +32,7 @@ import com.example.zenith.ui.navigation.Destination
 import com.example.zenith.ui.screens.focus.FocusScreen
 import com.example.zenith.ui.screens.focus.FocusViewModel
 import com.example.zenith.ui.screens.settings.SettingsScreen
+import com.example.zenith.ui.screens.statistics.SessionHistoryScreen
 import com.example.zenith.ui.screens.statistics.StatisticsScreen
 import com.example.zenith.ui.theme.ZenithTheme
 
@@ -66,7 +67,7 @@ class MainActivity : ComponentActivity() {
                         )
                     },
                     bottomBar = {
-                        if (backStack.last() != Destination.Settings) {
+                        if (backStack.last() != Destination.Settings && backStack.last() != Destination.SessionHistory) {
                             ZenithBottomBar(
                                 currentDestination = backStack.last(),
                                 onNavigate = { newDestination ->
@@ -92,8 +93,13 @@ class MainActivity : ComponentActivity() {
                         NavEntry(key) {
                             when (key) {
                                 Destination.Focus -> FocusScreen(viewModel = focusViewModel)
-                                Destination.Stats -> StatisticsScreen()
+                                Destination.Stats -> StatisticsScreen(
+                                    onNavigateToHistory = { backStack.add(Destination.SessionHistory) }
+                                )
                                 Destination.Settings -> SettingsScreen()
+                                Destination.SessionHistory -> SessionHistoryScreen(
+                                    onBackClick = { backStack.remove(Destination.SessionHistory) }
+                                )
                             }
                         }
                     }

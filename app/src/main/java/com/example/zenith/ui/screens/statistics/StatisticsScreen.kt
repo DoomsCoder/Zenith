@@ -1,6 +1,5 @@
 package com.example.zenith.ui.screens.statistics
 
-import android.widget.Space
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -30,7 +29,9 @@ import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StatisticsScreen() {
+fun StatisticsScreen(
+    onNavigateToHistory: () -> Unit
+) {
     var showRules by remember { mutableStateOf(false) }
     var chartSelectedIndex by remember { mutableStateOf<Int?>(null) }
     val sheetState = rememberModalBottomSheetState()
@@ -160,7 +161,7 @@ fun StatisticsScreen() {
             }
 
             item {
-                RecentLogSection(onViewAllClick = {/* Handle Navigation */})
+                RecentLogSection(onViewAllSessionsClick = onNavigateToHistory)
                 Spacer(Modifier.height(48.dp))
             }
         }

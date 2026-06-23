@@ -35,7 +35,7 @@ data class RecentSessionSummary(
 )
 @Composable
 fun RecentLogSection(
-    onViewAllClick: () -> Unit,
+    onViewAllSessionsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     // Dummy data
@@ -76,7 +76,7 @@ fun RecentLogSection(
         Row(
             modifier = modifier
                 .align(Alignment.End)
-                .clickable{ onViewAllClick() }
+                .clickable{ onViewAllSessionsClick() }
                 .padding(vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {

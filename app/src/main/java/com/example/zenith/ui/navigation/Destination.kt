@@ -12,6 +12,9 @@ sealed interface Destination : NavKey {
 
     @Serializable
     data object Settings: Destination
+
+    @Serializable
+    data object SessionHistory: Destination
     companion object {
         val entries = listOf(Focus, Stats)
     }

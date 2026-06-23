@@ -72,7 +72,7 @@ fun SessionHistoryScreen(
     var selectedFilter by rememberSaveable { mutableStateOf("All") }
     val filteredSessions = remember(selectedFilter){
         val list = when(selectedFilter) {
-            "Complete" -> allSessions.filter { it.isCompleted }
+            "Completed" -> allSessions.filter { it.isCompleted }
             "Abandoned" -> allSessions.filter { !it.isCompleted }
             else -> allSessions
         }
@@ -111,7 +111,7 @@ fun SessionHistoryScreen(
             )
         }
 
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(20.dp))
 
         // Filters Row
         Row(
@@ -161,7 +161,7 @@ fun SessionHistoryScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize(),
-            contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 40.dp),
+            contentPadding = PaddingValues(start = 24.dp, top = 8.dp, end = 24.dp, bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(items = filteredSessions, key = { it.id }) { session ->
