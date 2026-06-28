@@ -49,7 +49,7 @@ import com.example.zenith.ui.theme.MutedGray
 import com.example.zenith.ui.theme.OffWhite
 import com.example.zenith.ui.theme.SoftIndigo
 
-data class SessionDummyData(
+data class SessionData(
     val id: Int,
     val missionName: String,
     val plannedDurationMinutes: Int,
@@ -63,7 +63,7 @@ data class SessionDummyData(
 
 @Composable
 fun TodayMissionLogSection(
-    sessions: List<SessionDummyData>,
+    sessions: List<SessionData>,
     onStartSessionClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -120,7 +120,7 @@ fun TodayMissionLogSection(
 
 @Composable
 fun ExpandableSessionCard(
-    session: SessionDummyData,
+    session: SessionData,
     isExpanded: Boolean,
     onToggle: () -> Unit
 ) {
@@ -329,7 +329,7 @@ private fun getTelemetryColor(count: Int): Color {
 @Composable
 fun TodayMissionLogPreview() {
     val dummySessions = listOf(
-        SessionDummyData(
+        SessionData(
             id = 1,
             missionName = "AnkiDroid PR #20849",
             plannedDurationMinutes = 120,
@@ -340,7 +340,7 @@ fun TodayMissionLogPreview() {
             appSwitches = 1,
             focusScoreImpact = 240
         ),
-        SessionDummyData(
+        SessionData(
             id = 2,
             missionName = "OpenAI Buildathon Wealnex Setup",
             plannedDurationMinutes = 45,

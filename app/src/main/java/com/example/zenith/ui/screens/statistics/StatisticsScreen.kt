@@ -36,7 +36,7 @@ fun StatisticsScreen(
     var chartSelectedIndex by remember { mutableStateOf<Int?>(null) }
     val sheetState = rememberModalBottomSheetState()
     val dummySessions = listOf(
-        SessionDummyData(
+        SessionData(
             id = 1,
             missionName = "AnkiDroid PR #20849",
             plannedDurationMinutes = 120,
@@ -47,7 +47,7 @@ fun StatisticsScreen(
             appSwitches = 1,
             focusScoreImpact = 240
         ),
-        SessionDummyData(
+        SessionData(
             id = 2,
             missionName = "OpenAI Buildathon Wealnex Setup",
             plannedDurationMinutes = 45,
