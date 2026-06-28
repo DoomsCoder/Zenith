@@ -51,7 +51,7 @@ import com.example.zenith.ui.theme.SoftIndigo
 @SuppressLint("DefaultLocale")
 @Composable
 fun FocusScoreSection(
-    score: Int = 2347,
+    score: Int = 2297,
     weeklyDelta: Int = 340,
     currentStreak: Int = 12,
     bestStreak: Int = 15,
@@ -305,6 +305,7 @@ fun FocusScoreSection(
                 TelemetryRow("Focus Minutes", "+847 pts", valueColor = SoftIndigo)
                 TelemetryRow("Abandonments", "-150 pts", valueColor = Color(0xFFEF5350))
                 TelemetryRow("Pickups Detected", "-50 pts", valueColor = Color(0xFFEF5350))
+                TelemetryRow("App Switches", "-50 pts", valueColor = Color(0xFFEF5350))
                 TelemetryRow("Streak Bonus", "+500 pts", valueColor = SoftIndigo)
                 Spacer(Modifier.height(16.dp))
                 HorizontalDivider(color = Color.White.copy(0.05f))

@@ -27,6 +27,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -107,7 +108,8 @@ fun TodayMissionLogSection(
                     session = sessions,
                     isExpanded = expandedSessionId == sessions.id,
                     onToggle = {
-                        expandedSessionId = if (expandedSessionId == sessions.id) null else sessions.id
+                        expandedSessionId =
+                            if (expandedSessionId == sessions.id) null else sessions.id
                     }
                 )
                 Spacer(modifier = Modifier.height(12.dp))
@@ -182,19 +184,38 @@ fun ExpandableSessionCard(
                 TelemetryRow("DATE & TIME", session.date)
                 TelemetryRow("PLANNED DURATION", "${session.plannedDurationMinutes} min")
                 TelemetryRow("ACTUAL DURATION", "${session.actualDurationMinutes} min")
-                TelemetryRow("STATUS", value = statusText,
-                    valueColor = statusColor)
+                TelemetryRow(
+                    "STATUS", value = statusText,
+                    valueColor = statusColor
+                )
 
                 Spacer(modifier = Modifier.height(24.dp))
-                Text("TELEMETRY", style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace, color = MutedGray.copy(alpha = 0.5f)))
+                Text(
+                    "TELEMETRY",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontFamily = FontFamily.Monospace,
+                        color = MutedGray.copy(alpha = 0.5f)
+                    )
+                )
                 Spacer(modifier = Modifier.height(8.dp))
                 HorizontalDivider(color = Color.White.copy(alpha = 0.05f))
                 Spacer(modifier = Modifier.height(16.dp))
 
-                TelemetryRow("Phone Pickups", session.phonePickups.toString(), getTelemetryColor(session.phonePickups))
-                TelemetryRow("App Switches", session.appSwitches.toString(), getTelemetryColor(session.appSwitches))
-                TelemetryRow("Focus Score Impact", "${if (session.focusScoreImpact >= 0) "+" else ""}${session.focusScoreImpact} pts",
-                    if (session.focusScoreImpact >= 0) Color(0xFF4CAF50) else Color(0xFFEF5350))
+                TelemetryRow(
+                    "Phone Pickups",
+                    session.phonePickups.toString(),
+                    getTelemetryColor(session.phonePickups)
+                )
+                TelemetryRow(
+                    "App Switches",
+                    session.appSwitches.toString(),
+                    getTelemetryColor(session.appSwitches)
+                )
+                TelemetryRow(
+                    "Focus Score Impact",
+                    "${if (session.focusScoreImpact >= 0) "+" else ""}${session.focusScoreImpact} pts",
+                    if (session.focusScoreImpact >= 0) Color(0xFF4CAF50) else Color(0xFFEF5350)
+                )
             }
         }
     }
@@ -251,7 +272,12 @@ fun EmptyStateCard(onStartSessionClick: () -> Unit) {
                 .padding(vertical = 48.dp, horizontal = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Surface(modifier = Modifier.size(64.dp), shape = CircleShape, color = Color.White.copy(alpha = 0.03f), border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))) {
+            Surface(
+                modifier = Modifier.size(64.dp),
+                shape = CircleShape,
+                color = Color.White.copy(alpha = 0.03f),
+                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
+            ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         Icons.Default.Adjust,
@@ -262,15 +288,37 @@ fun EmptyStateCard(onStartSessionClick: () -> Unit) {
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))
-            Text("No sessions yet today. Your focus\nrecord starts the moment you begin.", style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace, color = MutedGray.copy(alpha = 0.6f), textAlign = TextAlign.Center))
+            Text(
+                "No sessions yet today. Your focus\nrecord starts the moment you begin.",
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontFamily = FontFamily.Monospace,
+                    color = MutedGray.copy(alpha = 0.6f),
+                    textAlign = TextAlign.Center
+                )
+            )
             Spacer(modifier = Modifier.height(32.dp))
-            Text("[ START FIRST SESSION -> ]", modifier = Modifier.clickable { onStartSessionClick() }, style = MaterialTheme.typography.labelLarge.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, color = SoftIndigo))
+            OutlinedButton(
+                onClick = {},
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.dp, SoftIndigo.copy(0.3f))
+            ) {
+                Text(
+                    " START FIRST SESSION ",
+                    modifier = Modifier.clickable { onStartSessionClick() },
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold,
+                        color = SoftIndigo
+                    )
+                )
+            }
         }
     }
 }
 
 private fun getTelemetryColor(count: Int): Color {
-    return when(count) {
+    return when (count) {
         0 -> Color(0xFF4CAF50)
         in 1..2 -> Color(0xFFFFA726)
         else -> Color(0xFFEF5350)
@@ -305,12 +353,14 @@ fun TodayMissionLogPreview() {
         )
     )
 
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .background(Color(0xFF121212))
-        .padding(top = 24.dp)) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF121212))
+            .padding(top = 24.dp)
+    ) {
         TodayMissionLogSection(
-            sessions = dummySessions,
+            sessions = emptyList(),
             onStartSessionClick = {}
         )
     }

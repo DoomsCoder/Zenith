@@ -10,7 +10,8 @@ data class ScoreBreakdown(
     val completionPoints: Int = 0,
     val focusMinutePoints: Int = 0,
     val abandonmentPenalty: Int = 0,
-    val distractionPenalty: Int = 0,
+    val pickupPenalty: Int = 0,
+    val appSwitchPenalty: Int = 0,
     val streakBonus: Int = 0,
     val totalScore: Int = 0,
 )
@@ -77,16 +78,18 @@ object FocusScoreEvaluator {
         val compPts = completedCount * PTS_SESSION_COMPLETE
         val minutePts = (totalFocusSeconds / 60).toInt() * PTS_PER_MINUTE
         val abandonPenalty = abandonedCount * PTS_SESSION_ABANDON
-        val distPenalty = (totalPickups * PTS_PER_PICKUP) + (totalSwitches * PTS_PER_APP_SWITCH)
+        val pPenalty = totalPickups * PTS_PER_PICKUP
+        val sPenalty = totalSwitches * PTS_PER_APP_SWITCH
         val bonus = (streakDays / 7) * PTS_STREAK_BONUS
 
-        val total = compPts + minutePts + abandonPenalty + distPenalty + bonus
+        val total = compPts + minutePts + abandonPenalty + pPenalty + sPenalty + bonus
 
         return ScoreBreakdown(
             completionPoints = compPts,
             focusMinutePoints = minutePts,
             abandonmentPenalty = abandonPenalty,
-            distractionPenalty = distPenalty,
+            pickupPenalty = pPenalty,
+            appSwitchPenalty = sPenalty,
             streakBonus = bonus,
             totalScore = max(0, total) // Zenith scores never go below zero
         )
