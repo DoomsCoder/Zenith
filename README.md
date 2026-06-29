@@ -56,7 +56,7 @@ Zenith leverages the `UsageStatsManager` API to monitor physical and digital dis
 4. Grant `Usage Access` permission in settings when prompted.
 
 ## License
-Distributed under the Apache 2.0 License. See `LICENSE` for more information.
+Distributed under the Apache 2.0 License. See [**LICENSE**](LICENSE) for more information.
 
 ---
 *Built for professionals who demand total discipline.*
