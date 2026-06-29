@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp" width="128" alt="Zenith Logo" />
+  <img src="screenshots/Logo.png" width="128" alt="Zenith Logo" />
 
   # Zenith
   **A strict, telemetry-driven focus engine for deep work.**
@@ -11,7 +11,11 @@
   [![Material 3](https://img.shields.io/badge/Material%203-Latest-757575?logo=materialdesign&logoColor=white)](https://m3.material.io/)
   [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
+  <br>
+
   <video src="screenshots/focus-timer-demo.mp4" width="300" autoplay loop muted></video>
+
+  <br>
 
   <sub>Current Status: Core Engine & Real-time Telemetry Mapping.</sub>
 </div>
@@ -54,6 +58,9 @@ Zenith leverages the `UsageStatsManager` API to monitor physical and digital dis
 2. Open in Android Studio (Ladybug+).
 3. Connect a **physical device** (API 26+) for accurate usage telemetry.
 4. Grant `Usage Access` permission in settings when prompted.
+
+## License
+Distributed under the Apache 2.0 License. See `LICENSE` for more information.
 
 ---
 *Built for professionals who demand total discipline.*
