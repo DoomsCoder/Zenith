@@ -1,30 +1,59 @@
-# Zenith
-**Zenith** is a context-aware telemetry focus tracker designed for high-performance deep work. Unlike aggressive app blockers, Zenith monitors physical habits and device interactions to measure the true quality of focus and introduces real-time gamified friction to prevent infinite scrolling loops.
+<div align="center">
+  <img src="app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp" width="128" alt="Zenith Logo" />
 
-## 🚀 Key Features
-*   **Deep Work Engine:** A high-precision timer backed by an Android Foreground Service to survive system memory management and maintain session integrity.
-*   **Context-Aware Tracking:** Integrates `UsageStatsManager` to monitor app switches and device interactions, calculating a precise percentage-based focus score without blindly blocking access.
-*   **Strict Bio-Breaks:** Enforces real discipline with a fixed-limit bio-break countdown timer that automatically resumes focus states.
-*   **Gestural Interactions:** Features a custom Canvas "Halo" dial for intuitive interactions, including a Hold-to-Abandon mechanic.
-*   **Advanced Analytics:** A premium dashboard featuring a rolling 7-day focus window built with dynamic, native Cartesian charts and an All-Time Telemetry grid.
+  # Zenith
+  **A strict, telemetry-driven focus engine for deep work.**
 
-## 🛠 Tech Stack
-*   **UI Framework:** Jetpack Compose, Vico Cartesian Charting Library, Custom Canvas components.
-*   **Architecture:** Unidirectional Data Flow (UDF) / MVVM with StateFlow & SharedFlow.
-*   **Local Database:** Room (Persistent storage for `FocusSession` and `DistractionEvent` telemetry).
-*   **System Integration:** Android Foreground Services and `UsageStatsManager` API.
-*   **Testing:** JUnit 4 for validating focus point algorithms and streak calculation math.
+  Zenith isn't just a timer—it's a high-performance monitor that tracks device interactions to measure the true quality of your focus. 
 
-## 🏗 Project Structure
-- `ui.screens.focus`: Core Focus experience featuring custom Canvas dials, timers, and gestural overlays.
-- `ui.screens.statistics`: Analytics dashboard housing the `ThisWeeksFocusChart` and telemetry grids.
-- `service`: `FocusService` implementation handling session lifecycle, strict breaks, and hardware monitoring.
-- `data`: Room persistence layer with automated tracking DAOs for session intents and completion statuses.
+  [![Kotlin](https://img.shields.io/badge/Kotlin-2.0.0-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
+  [![Jetpack Compose](https://img.shields.io/badge/Compose-1.7.0-4285F4?logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
+  [![Material 3](https://img.shields.io/badge/Material%203-Latest-757575?logo=materialdesign&logoColor=white)](https://m3.material.io/)
+  [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
-## 🔧 Installation & Setup
-1. Clone the repository.
-2. Open in Android Studio (Ladybug or newer).
-3. Sync Gradle and run on a physical device with API 26 (Android 8.0) or higher. *(Note: Physical device recommended for accurate UsageStats telemetry).*
+  <video src="screenshots/focus-timer-demo.mp4" width="300" autoplay loop muted></video>
+
+  <sub>Current Status: Core Engine & Real-time Telemetry Mapping.</sub>
+</div>
 
 ---
-*Developed for professionals and students who demand total discipline.*
+
+## The Philosophy
+Standard timers are too easy to ignore. Zenith introduces **Context-Aware Friction**. It doesn't just block apps; it monitors your habits and uses telemetry to tell you how deep your focus *actually* is.
+
+## System Architecture
+Zenith is built on a **Single Source of Truth (SSOT)** principle. The UI, Service, and Persistence layers stay in perfect sync via a unidirectional data flow. This ensures that the focus session remains the absolute state, regardless of whether the application is in the foreground, background, or experiencing process death.
+
+## Engineering Highlights
+
+### 1. Gestural Halo Engine (Custom Canvas)
+The core timer isn't built with standard components. It’s a custom-engineered **Canvas dial** that maps raw touch coordinates to trigonometric angles in real-time.
+- **Performance:** Native 60fps rendering using optimized DrawScopes.
+- **Interaction:** Dynamic "Snap-to-Time" logic and gestural haptics for precision control.
+
+### 2. Resilient Lifecycle Management
+To prevent the Android **Low Memory Killer (LMK)** from interrupting deep work, the timer is backed by a high-priority **Foreground Service**.
+- **Survivability:** The session state is persisted across process death using a combination of Service lifecycle hooks and Room persistence.
+- **Synchronization:** Real-time synchronization between the Service and UI is handled via a robust StateFlow implementation.
+
+### 3. Focus Telemetry and Scoring
+Zenith leverages the `UsageStatsManager` API to monitor physical and digital distractions without invasive app blocking:
+- **Event Tracking:** Detection of app switches and physical device pickups during a sprint.
+- **Algorithmic Scoring:** A custom logic engine that translates these events into a 0-100 Focus Score, providing objective data on work quality.
+
+## Tech Stack
+- **Languages:** Kotlin + Coroutines/Flow
+- **UI Framework:** Jetpack Compose (Custom Canvas, Material 3)
+- **Persistence:** Room (SQL with custom analytical queries)
+- **Background Work:** Android Foreground Services
+- **System APIs:** UsageStatsManager
+- **Data Visualization:** Vico Cartesian Library
+
+## Getting Started
+1. Clone the repository.
+2. Open in Android Studio (Ladybug+).
+3. Connect a **physical device** (API 26+) for accurate usage telemetry.
+4. Grant `Usage Access` permission in settings when prompted.
+
+---
+*Built for professionals who demand total discipline.*
