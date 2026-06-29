@@ -60,4 +60,7 @@ Zenith leverages the `UsageStatsManager` API to monitor physical and digital dis
 Distributed under the Apache 2.0 License. See [**LICENSE**](LICENSE) for more information.
 
 ---
+
+If you find this project interesting or useful for your own deep work, please consider giving this repository a ⭐. It helps me stay motivated and helps others discover the project!
+
 *Built for professionals who demand total discipline.*
