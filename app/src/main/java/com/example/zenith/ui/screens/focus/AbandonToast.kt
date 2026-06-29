@@ -24,7 +24,8 @@ import kotlinx.coroutines.delay
 @Composable
 fun AbandonToast(
     elapsedText: String,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onUndo: () -> Unit
 ) {
     // 1. ANIMATION STATE
     var isVisible by remember { mutableStateOf(false) }
@@ -50,6 +51,10 @@ fun AbandonToast(
     ) {
         AnimatedVisibility(
             visible = isVisible,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 110.dp)
+                .padding(horizontal = 20.dp),
             // 2. SPRING TRANSITION (Matches Figma damping: 26, stiffness: 310)
             enter = slideInVertically(
                 initialOffsetY = { it },
@@ -59,9 +64,6 @@ fun AbandonToast(
                 targetOffsetY = { it / 2 },
                 animationSpec = tween(300)
             ) + fadeOut(),
-            modifier = Modifier
-                .padding(bottom = 92.dp)
-                .padding(horizontal = 20.dp)
         ) {
             Surface(
                 color = Color(0xF7141212), // rgba(20,18,18,0.97)
@@ -106,6 +108,18 @@ fun AbandonToast(
                                 letterSpacing = 0.5.sp
                             )
                         }
+
+                        Text(
+                            text = "UNDO",
+                            color = Color(0xFFFFB998),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp,
+                            modifier = Modifier
+                                .clickable{
+                                    onUndo()
+                                }
+                                .padding(8.dp)
+                        )
 
                         // C. DISMISS BUTTON
                         Box(

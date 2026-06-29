@@ -74,6 +74,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.zenith.ui.theme.MutedGray
 import com.example.zenith.ui.theme.OffWhite
@@ -443,25 +444,36 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                                 ) else syncedButtonColor
                             )
                             .pointerInput(state.sessionState) {
-                                // If IDLE, just handle normal click. No long-press logic needed.
-                                if (state.sessionState == SessionState.IDLE) {
-                                    detectTapGestures(onTap = { if (state.missionText.isNotBlank()) viewModel.startSession() })
-                                } else {
-                                    // IF RUNNING OR PAUSED: Handle Tap vs Hold
-                                    detectTapGestures(
-                                        onTap = {
-                                            viewModel.toggleFocusSession()
-                                        },
-                                        onPress = {
+                                detectTapGestures(
+                                    onPress = {
+                                        if (state.sessionState == SessionState.IDLE) {
+                                            val released = tryAwaitRelease()
+                                            if (released && state.missionText.isNotBlank()) viewModel.startSession()
+                                        } else {
+                                            val pressStartTime = System.currentTimeMillis()
                                             isHolding = true
                                             try {
-                                                tryAwaitRelease()
+                                                tryAwaitRelease() // ✋ Code stops here until you lift your finger
                                             } finally {
                                                 isHolding = false
+                                                val holdDuration = System.currentTimeMillis() - pressStartTime
+
+                                                // ✅ GESTURE LOGIC: The Decision Engine
+                                                if (holdDuration >= 3000) {
+                                                    // 1. Success: Long press completed
+                                                    viewModel.abandonSession()
+                                                } else if (holdDuration < 300) {
+                                                    // 2. Success: Normal quick tap
+                                                    viewModel.toggleFocusSession()
+                                                }
+                                                // 3. Failed: User held for 1 or 2 seconds then changed their mind.
+                                                // We do NOTHING. The button stays as it was.
+
+                                                pressingProgress = 0f
                                             }
                                         }
-                                    )
-                                }
+                                    }
+                                )
                             },
                         contentAlignment = Alignment.Center
                     ) {
@@ -568,16 +580,7 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                 }
             }
 
-            Spacer(Modifier.height(32.dp))
-            // B. ABANDON TOAST
-            if (state.sessionState == SessionState.ABANDONED) {
-                val elapsedSeconds =
-                    (state.totalFocusSeconds - state.remainingFocusSeconds).toLong()
-                AbandonToast(
-                    elapsedText = formatTime(elapsedSeconds), // We'll link this to VM elapsed time later
-                    onDismiss = { viewModel.resetToDefaults() }
-                )
-            }
+//            Spacer(Modifier.height(32.dp))
 
             Spacer(modifier = Modifier.height(200.dp))
         }
@@ -590,6 +593,17 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                 durationText = formatTime(state.selectedDurationMinutes * 60L),
                 timestamp = completionTimestamp, // This formatting will move to VM later
                 onDismiss = { viewModel.resetToDefaults() }
+            )
+        }
+
+        // B. ABANDON TOAST
+        if (state.sessionState == SessionState.ABANDONED) {
+            val elapsedSeconds =
+                (state.totalFocusSeconds - state.remainingFocusSeconds).toLong()
+            AbandonToast(
+                elapsedText = formatTime(elapsedSeconds), // We'll link this to VM elapsed time later
+                onDismiss = { viewModel.resetToDefaults() },
+                onUndo = { viewModel.undoAbandon() }
             )
         }
     }
