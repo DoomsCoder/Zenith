@@ -10,6 +10,7 @@
   [![Jetpack Compose](https://img.shields.io/badge/Compose-1.7.0-4285F4?logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
   [![Material 3](https://img.shields.io/badge/Material%203-Latest-757575?logo=materialdesign&logoColor=white)](https://m3.material.io/)
   [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+  [![Changelog](https://img.shields.io/badge/Changelog-Keep%20a%20Changelog-orange)](CHANGELOG.md)
 
   ![Focus Timer Demo](screenshots/focus-timer-demo.gif)
 
