@@ -74,27 +74,25 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.zenith.ui.theme.MutedGray
 import com.example.zenith.ui.theme.OffWhite
 import com.example.zenith.ui.theme.SoftIndigo
 import kotlinx.coroutines.delay
-import kotlin.math.cos
-import kotlin.math.sin
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.math.cos
+import kotlin.math.sin
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
-    // --- 1. STATE MANAGEMENT ---
+    // State Management
     var showCustomSheet by rememberSaveable { mutableStateOf(false) }
     var customPickerValue by rememberSaveable { mutableIntStateOf(45) }
 
     val state by viewModel.uiState.collectAsState()
 
-    // Hold to abandon state
     var pressingProgress by rememberSaveable { mutableFloatStateOf(0f) }
     var isHolding by rememberSaveable { mutableStateOf(false) }
     val abandonColor = Color(0xFFFFC8AF).copy(0.38f)
@@ -109,7 +107,7 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
 
     val focusManager = LocalFocusManager.current
 
-    // --- 2. SMART FORMATTER LOGIC (Hours/Minutes/Seconds) ---
+    // Formatter logic
     val displayTime =
         remember(state.sessionState, state.remainingFocusSeconds, state.selectedDurationMinutes) {
             val totalSeconds = if (state.sessionState == SessionState.IDLE) {
@@ -193,7 +191,7 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
 
             Spacer(Modifier.height(32.dp))
 
-            // --- ZONE 2: STATUS & CANVAS TIMER ---
+            // Status Section
 
             val statusText = when (state.sessionState) {
                 SessionState.IDLE -> "SYSTEM STATUS: READY"
@@ -219,11 +217,9 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                 AnimatedContent(
                     targetState = statusText,
                     transitionSpec = {
-                        // New text slide-up speed configuration
                         slideInVertically(animationSpec = tween(600)) { height -> height } +
                                 fadeIn(animationSpec = tween(600)) togetherWith
 
-                                // Old text slide-up speed configuration
                                 slideOutVertically(animationSpec = tween(600)) { height -> -height } +
                                 fadeOut(animationSpec = tween(600))
                     },
@@ -245,12 +241,10 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
 
             Box(contentAlignment = Alignment.Center, modifier = Modifier.size(240.dp)) {
                 val progress = state.progress
-                // THE WATCH-FACE DIAL
+                // Watch face dial
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     val center = Offset(size.width / 2, size.height / 2)
                     val radius = size.minDimension / 2
-                    // --- 1. DRAW THE TICKS (Sitting inside the Halo) ---
-                    // We reduce the outer radius for ticks to create a gap for the arc
                     val tickOuterRadius = radius - 14.dp.toPx()
 
                     for (i in 0 until 60) {
@@ -263,13 +257,11 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                         val tickLength = if (i % 5 == 0) 10.dp.toPx() else 5.dp.toPx()
                         val strokeWidth = if (i % 5 == 0) 2.dp.toPx() else 1.dp.toPx()
 
-                        // Dim the ticks significantly to let the outer arc be the "Hero"
                         val isTickNotActive =
                             if (i % 5 == 0) MutedGray.copy(0.3f) else MutedGray.copy(0.1f)
                         val color =
                             if (isTickActive && progress > 0f) SoftIndigo.copy(0.6f) else isTickNotActive
 
-                        // Calculate Start and End points based on the new inset radius
                         val startX =
                             center.x + (tickOuterRadius - tickLength) * cos(angleInRadians).toFloat()
                         val startY =
@@ -285,16 +277,15 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                         )
                     }
 
-                    // --- 2. DRAW THE THICK OUTER HALO (Progress Arc) ---
+                    // Progress halo bar
                     if (progress > 0f) {
-                        val arcStrokeWidth = 4.dp.toPx() // Thicker for better visibility
+                        val arcStrokeWidth = 4.dp.toPx()
                         drawArc(
                             color = SoftIndigo,
                             startAngle = -90f,
                             sweepAngle = 360f * progress,
                             useCenter = false,
                             style = Stroke(width = arcStrokeWidth, cap = StrokeCap.Round),
-                            // We inset the size by half the stroke width to keep it perfectly within canvas bounds
                             size = size.copy(
                                 width = size.width - arcStrokeWidth,
                                 height = size.height - arcStrokeWidth
@@ -328,7 +319,7 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
 
             Spacer(Modifier.height(32.dp))
 
-            // --- ZONE 3: PRESET CAPSULES ---
+            // Preset Capsules
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -396,8 +387,7 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // --- ZONE 4: THE INTERACTIVE ENGINE BUTTON ---
-
+            // Main Interaction Engine
             val isIntentClear = isHolding && pressingProgress > 0.03f
 
             val buttonText = when (state.sessionState) {
@@ -453,21 +443,19 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                                             val pressStartTime = System.currentTimeMillis()
                                             isHolding = true
                                             try {
-                                                tryAwaitRelease() // ✋ Code stops here until you lift your finger
+                                                tryAwaitRelease()
                                             } finally {
                                                 isHolding = false
-                                                val holdDuration = System.currentTimeMillis() - pressStartTime
+                                                val holdDuration =
+                                                    System.currentTimeMillis() - pressStartTime
 
-                                                // ✅ GESTURE LOGIC: The Decision Engine
                                                 if (holdDuration >= 3000) {
-                                                    // 1. Success: Long press completed
+                                                    // Long press completed
                                                     viewModel.abandonSession()
                                                 } else if (holdDuration < 300) {
-                                                    // 2. Success: Normal quick tap
+                                                    // Normal quick tap
                                                     viewModel.toggleFocusSession()
                                                 }
-                                                // 3. Failed: User held for 1 or 2 seconds then changed their mind.
-                                                // We do NOTHING. The button stays as it was.
 
                                                 pressingProgress = 0f
                                             }
@@ -495,7 +483,6 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                             }
                         }
 
-                        // THE PROGRESS BAR (Bottom 2px bar)
                         if (isIntentClear) {
                             Box(
                                 modifier = Modifier
@@ -509,11 +496,9 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                         AnimatedContent(
                             targetState = buttonText,
                             transitionSpec = {
-                                // New text slide-up speed configuration
                                 slideInVertically(animationSpec = tween(600)) { height -> height } +
                                         fadeIn(animationSpec = tween(600)) togetherWith
 
-                                        // Old text slide-up speed configuration
                                         slideOutVertically(animationSpec = tween(600)) { height -> -height } +
                                         fadeOut(animationSpec = tween(600))
                             },
@@ -532,7 +517,7 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                 }
 
 
-                // --- ZONE 5: SLIDING ABANDON SECTION ---
+                // Sliding Abandon Section
                 AnimatedVisibility(
                     visible = state.sessionState == SessionState.RUNNING || state.sessionState == SessionState.PAUSED,
                     enter = expandVertically() + fadeIn(),
@@ -542,7 +527,6 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.padding(top = 20.dp)
                     ) {
-                        // Hairline Divider
                         Box(
                             modifier = Modifier
                                 .width(40.dp)
@@ -580,13 +564,10 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                 }
             }
 
-//            Spacer(Modifier.height(32.dp))
-
             Spacer(modifier = Modifier.height(200.dp))
         }
 
-        // --- ZONE 6: OVERLAYS (Floating on top) ---
-        // A. SUCCESS OVERLAY
+        // Success and Abandon Overlay
         if (state.sessionState == SessionState.FINISHED) {
             CompletionOverlay(
                 missionName = state.missionText,
@@ -596,7 +577,6 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
             )
         }
 
-        // B. ABANDON TOAST
         if (state.sessionState == SessionState.ABANDONED) {
             val elapsedSeconds =
                 (state.totalFocusSeconds - state.remainingFocusSeconds).toLong()
@@ -609,7 +589,7 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
     }
 
 
-    // --- CUSTOM PICKER BOTTOM SHEET ---
+    // Custom Picker Bottom Sheet
     if (showCustomSheet) {
         ModalBottomSheet(
             onDismissRequest = { showCustomSheet = false },
