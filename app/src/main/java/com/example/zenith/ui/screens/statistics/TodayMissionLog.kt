@@ -1,5 +1,6 @@
 package com.example.zenith.ui.screens.statistics
 
+import android.os.Parcelable
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -48,18 +49,8 @@ import androidx.compose.ui.unit.sp
 import com.example.zenith.ui.theme.MutedGray
 import com.example.zenith.ui.theme.OffWhite
 import com.example.zenith.ui.theme.SoftIndigo
+import kotlinx.parcelize.Parcelize
 
-data class SessionData(
-    val id: Int,
-    val missionName: String,
-    val plannedDurationMinutes: Int,
-    val actualDurationMinutes: Int,
-    val isCompleted: Boolean,
-    val date: String,
-    val phonePickups: Int,
-    val appSwitches: Int,
-    val focusScoreImpact: Int
-)
 
 @Composable
 fun TodayMissionLogSection(

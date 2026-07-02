@@ -20,13 +20,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.zenith.ui.theme.MutedGray
 
-data class AllTimeMetrics(
-    val totalSessions: Int,
-    val totalHours: Float,
-    val completionRate: Int,
-    val bestStreak: Int
-)
-
 @Composable
 fun AllTelemetrySection(
     metrics: AllTimeMetrics,

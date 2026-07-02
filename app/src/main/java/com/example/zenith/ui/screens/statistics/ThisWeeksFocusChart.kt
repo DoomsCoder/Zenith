@@ -57,12 +57,6 @@ import java.time.format.DateTimeFormatter
 import kotlin.math.max
 import com.patrykandpatrick.vico.core.common.shape.Shape as VicoShape
 
-data class DailyFocusMetrics(
-    val date: LocalDate,
-    val totalMinutes: Int,
-    val sessionCount: Int
-)
-
 private val datesKey = ExtraStore.Key<List<LocalDate>>()
 
 @SuppressLint("DefaultLocale")

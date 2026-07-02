@@ -1,11 +1,14 @@
 package com.example.zenith.ui.screens.statistics
 
+import android.os.Parcelable
 import com.example.zenith.data.FocusSession
+import kotlinx.parcelize.Parcelize
 import kotlin.math.max
 
 /**
  * Data model representing the itemized point values for the Stats Screen breakdown.
  */
+@Parcelize
 data class ScoreBreakdown(
     val completionPoints: Int = 0,
     val focusMinutePoints: Int = 0,
@@ -14,12 +17,13 @@ data class ScoreBreakdown(
     val appSwitchPenalty: Int = 0,
     val streakBonus: Int = 0,
     val totalScore: Int = 0,
-)
+): Parcelable
 
 /**
  * Zenith Tier System - Defines the thresholds for user progression.
  */
-enum class FocusTier(val label: String, val minScore: Int) {
+@Parcelize
+enum class FocusTier(val label: String, val minScore: Int): Parcelable {
     INITIALIZING("INITIALIZING", 0),
     BUILDING_FOCUS("BUILDING FOCUS", 500),
     DEEP_WORKER("DEEP WORKER", 1500),

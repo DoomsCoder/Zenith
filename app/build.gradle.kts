@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp) // Required for Room compiler
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.kotlin.parcelize)
 }
 
 android {
