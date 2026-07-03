@@ -3,78 +3,76 @@ package com.example.zenith.ui.screens.focus
 import android.app.Application
 import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.example.zenith.data.AppDatabase
 import com.example.zenith.service.FocusService
+import com.example.zenith.ui.common.UiStateMachine
+import com.example.zenith.ui.common.asUiStateMachine
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-/**
- * SessionState defines the lifecycle of a focus block.
- */
-enum class SessionState {
-    IDLE, RUNNING, PAUSED, FINISHED, ABANDONED
-}
+class FocusViewModel(
+    application: Application,
+    savedState: SavedStateHandle
+) : AndroidViewModel(application) {
+    private val db by lazy { AppDatabase.getDatabase(application) }
+    private val sessionDao by lazy { db.focusSessionDao() }
 
-/**
- * FocusViewState represents the entire UI state for the Focus Screen.
- * Using a single data class ensures a "Single Source of Truth."
- */
-data class FocusViewState (
-    val sessionState: SessionState = SessionState.IDLE,
-    val missionText: String = "",
-    val selectedDurationMinutes: Int = 25,
-    val remainingFocusSeconds: Int = 0,
-    val totalFocusSeconds: Int = 0,
-    val remainingPausedSeconds: Int = 300,
-    val lastSessionDuration: String = "",
-    val lastSessionTimestamp:String = "",
-    val snapshotBeforeAbandon: FocusViewState? = null
-) {
-    /**
-     * Computed property to calculate the progress for the Canvas Dial.
-     * Logic: (Current / Total).
-     * Handles division by zero by returning 1f (Full circle).
-     */
-    val progress: Float
-        get() = if (totalFocusSeconds > 0) {
-            (totalFocusSeconds - remainingFocusSeconds).toFloat() / totalFocusSeconds.toFloat()
-        } else {
-            0f
-        }
-}
+    // State Machine
+    private val uiStateMachine: UiStateMachine<FocusViewState> =
+        savedState.asUiStateMachine(FocusViewState())
 
-/**
- * FocusViewModel acts as the brain for Zenith's Focus Screen.
- */
-class FocusViewModel(application: Application): AndroidViewModel(application) {
-
-    private val _uiState = MutableStateFlow(FocusViewState())
-    val uiState: StateFlow<FocusViewState> = _uiState.asStateFlow()
+    // UI observes this property
+    val uiState: StateFlow<FocusViewState> by uiStateMachine
 
     private var focusTimerJob: Job? = null
     private var pauseTimerJob: Job? = null
     private var abandonResetJob: Job? = null
 
-    /**
-     * Updates the user's focus intent (Zone 1).
-     */
-    fun updateMission(text: String) {
-        _uiState.update { it.copy(missionText = text) }
+    init {
+        if (!uiStateMachine.isStateRestored){
+            syncWithDatabase()
+        } else {
+            if (uiState.value.sessionState == SessionState.RUNNING) {
+                syncWithDatabase()
+            }
+        }
     }
 
-    /**
-     * Sets the target duration for the Pomodoro/Sprint (Zone 3).
-     * This also resets the timers so the UI reflects the new duration immediately.
-     */
+    private fun syncWithDatabase() {
+        viewModelScope.launch {
+            val lastSession = sessionDao.getLatestSession().first() ?: return@launch
+            val now = System.currentTimeMillis()
+            val elapsedSec = ((now - lastSession.timestamp) / 1000).toInt()
+            val plannedSec = lastSession.plannedDurationMinutes * 60
+
+            if (!lastSession.isCompleted && elapsedSec < plannedSec) {
+                uiStateMachine.update {
+                    copy(
+                        sessionState = SessionState.RUNNING,
+                        missionText = lastSession.missionName,
+                        selectedDurationMinutes = lastSession.plannedDurationMinutes,
+                        totalFocusSeconds = plannedSec,
+                        remainingFocusSeconds = plannedSec - elapsedSec
+                    )
+                }
+                startFocusTimer()
+            }
+        }
+    }
+
+    fun updateMission(text: String) {
+        uiStateMachine.update { copy(missionText = text) }
+    }
+
     fun setDuration(minutes: Int) {
         val totalSeconds = minutes * 60
-        _uiState.update {
-            it.copy(
+        uiStateMachine.update {
+            copy(
                 selectedDurationMinutes = minutes,
                 remainingFocusSeconds = totalSeconds,
                 totalFocusSeconds = totalSeconds
@@ -82,18 +80,14 @@ class FocusViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
-    /**
-     * Transitions from IDLE to RUNNING.
-     */
     fun startSession() {
-
-        val mission = _uiState.value.missionText
-        val minutes = _uiState.value.selectedDurationMinutes
+        val mission = uiState.value.missionText
+        val minutes = uiState.value.selectedDurationMinutes
         if (mission.isBlank()) return
 
         val totalSeconds = minutes * 60
-        _uiState.update {
-            it.copy(
+        uiStateMachine.update {
+            copy(
                 sessionState = SessionState.RUNNING,
                 totalFocusSeconds = totalSeconds,
                 remainingFocusSeconds = totalSeconds,
@@ -102,10 +96,9 @@ class FocusViewModel(application: Application): AndroidViewModel(application) {
         }
 
         val intent = Intent(getApplication(), FocusService::class.java).apply {
-            putExtra("MISSION_NAME",mission)
-            putExtra("PLANNED_MINUTES",minutes)
+            putExtra("MISSION_NAME", mission)
+            putExtra("PLANNED_MINUTES", minutes)
         }
-
         getApplication<Application>().startForegroundService(intent)
         startFocusTimer()
     }
@@ -113,45 +106,35 @@ class FocusViewModel(application: Application): AndroidViewModel(application) {
     private fun startFocusTimer() {
         focusTimerJob?.cancel()
         focusTimerJob = viewModelScope.launch {
-            while (_uiState.value.remainingFocusSeconds > 0) {
+            // FIXED: Use uiState.value inside loop
+            while (uiState.value.remainingFocusSeconds > 0) {
                 delay(1000)
-                _uiState.update {
-                    it.copy(
-                        remainingFocusSeconds = it.remainingFocusSeconds - 1
-                    )
+                uiStateMachine.update {
+                    copy(remainingFocusSeconds = remainingFocusSeconds - 1)
                 }
             }
             finishSession()
         }
     }
 
-    /**
-     * Transitions from RUNNING to PAUSED.
-     * Starts the 5-minute Bio-Break countdown.
-     */
     fun pausedSession() {
         focusTimerJob?.cancel()
-        _uiState.update { it.copy(sessionState = SessionState.PAUSED) }
+        uiStateMachine.update { copy(sessionState = SessionState.PAUSED) }
 
         pauseTimerJob?.cancel()
         pauseTimerJob = viewModelScope.launch {
-            while (_uiState.value.remainingPausedSeconds > 0) {
+            while (uiState.value.remainingPausedSeconds > 0) {
                 delay(1000)
-                _uiState.update { it.copy(remainingPausedSeconds = it.remainingPausedSeconds - 1) }
+                uiStateMachine.update { copy(remainingPausedSeconds = remainingPausedSeconds - 1) }
             }
-            // Strict rule: Bio-break over, resume automatically!
             resumeSession()
         }
-
     }
 
-    /**
-     * Transitions from PAUSED back to RUNNING.
-     */
     fun resumeSession() {
         pauseTimerJob?.cancel()
-        _uiState.update {
-            it.copy(
+        uiStateMachine.update {
+            copy(
                 sessionState = SessionState.RUNNING,
                 remainingPausedSeconds = 300
             )
@@ -159,90 +142,66 @@ class FocusViewModel(application: Application): AndroidViewModel(application) {
         startFocusTimer()
     }
 
-    /**
-     * Force resets the engine back to IDLE.
-     */
     fun abandonSession() {
         focusTimerJob?.cancel()
         pauseTimerJob?.cancel()
+        sendServiceCommand(isFinished = false)
 
-        stopFocusService()
-
-        val currentState = _uiState.value
-        _uiState.update {
-            it.copy(
+        val currentState = uiState.value
+        uiStateMachine.update {
+            copy(
                 sessionState = SessionState.ABANDONED,
                 snapshotBeforeAbandon = currentState
             )
         }
-        // This ensures the app resets even if the user navigates away.
+
         abandonResetJob?.cancel()
         abandonResetJob = viewModelScope.launch {
-            delay(4000) // Give them 4 seconds to see the toast/undo
-            if (_uiState.value.sessionState == SessionState.ABANDONED) {
+            delay(4000)
+            if (uiState.value.sessionState == SessionState.ABANDONED) {
                 resetToDefaults()
             }
         }
-        // TODO: Save incomplete session to Room
-        // TODO: DistarctionEvent and Session data logic in Room
-
     }
 
     fun undoAbandon() {
         abandonResetJob?.cancel()
-        val snapshot = _uiState.value.snapshotBeforeAbandon ?: return
+        val snapshot = uiState.value.snapshotBeforeAbandon ?: return
 
-        _uiState.update {
-            it.copy(
+        uiStateMachine.update {
+            copy(
                 missionText = snapshot.missionText,
                 selectedDurationMinutes = snapshot.selectedDurationMinutes,
                 remainingFocusSeconds = snapshot.remainingFocusSeconds,
                 totalFocusSeconds = snapshot.totalFocusSeconds,
-
-                // Restore the state!
-                // If it was Paused, go back to Pause. Otherwise, go back to Running.
                 sessionState = if (snapshot.sessionState == SessionState.PAUSED)
                     SessionState.PAUSED else SessionState.RUNNING,
-
-                snapshotBeforeAbandon = null // Clear the snapshot memory
+                snapshotBeforeAbandon = null
             )
         }
 
-        if (_uiState.value.sessionState == SessionState.RUNNING) {
+        if (uiState.value.sessionState == SessionState.RUNNING) {
             startFocusTimer()
-
-            // Also restart the background service!
             val intent = Intent(getApplication(), FocusService::class.java).apply {
-                putExtra("MISSION_NAME", _uiState.value.missionText)
-                putExtra("PLANNED_MINUTES", _uiState.value.selectedDurationMinutes)
+                putExtra("MISSION_NAME", uiState.value.missionText)
+                putExtra("PLANNED_MINUTES", uiState.value.selectedDurationMinutes)
             }
             getApplication<Application>().startForegroundService(intent)
-        } else if (_uiState.value.sessionState == SessionState.PAUSED) {
-            // If it was paused, we need to restart the Bio-Break countdown!
+        } else if (uiState.value.sessionState == SessionState.PAUSED) {
             pausedSession()
         }
     }
 
-    /**
-     * Naturally completes the session.
-     */
     fun finishSession() {
         focusTimerJob?.cancel()
         pauseTimerJob?.cancel()
-
-        stopFocusService()
-        _uiState.update {
-            it.copy(
-                sessionState = SessionState.FINISHED
-            )
-        }
-        // TODO: Save complete session to Room
-
+        sendServiceCommand(isFinished = true)
+        uiStateMachine.update { copy(sessionState = SessionState.FINISHED) }
     }
 
     internal fun resetToDefaults() {
-        _uiState.update {
-            it.copy(
+        uiStateMachine.update {
+            FocusViewState(
                 missionText = "",
                 selectedDurationMinutes = 25,
                 remainingFocusSeconds = 25 * 60,
@@ -252,22 +211,20 @@ class FocusViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
-    private fun stopFocusService() {
-        val intent = Intent(getApplication(), FocusService::class.java)
-        getApplication<Application>().stopService(intent)
+    private fun sendServiceCommand(isFinished: Boolean) {
+        val intent = Intent(getApplication(), FocusService::class.java).apply {
+            action = FocusService.ACTION_STOP
+            putExtra(FocusService.EXTRA_IS_FINISHED, isFinished)
+        }
+        getApplication<Application>().startForegroundService(intent)
     }
 
-    /**
-     * Helper to route the UI click to the correct lifecycle method.
-     */
     fun toggleFocusSession() {
-        when (_uiState.value.sessionState) {
+        when (uiState.value.sessionState) {
             SessionState.IDLE -> startSession()
             SessionState.RUNNING -> pausedSession()
             SessionState.PAUSED -> resumeSession()
-            SessionState.FINISHED, SessionState.ABANDONED -> {
-                resetToDefaults()
-            }
+            SessionState.FINISHED, SessionState.ABANDONED -> resetToDefaults()
         }
     }
 }
