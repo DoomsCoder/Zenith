@@ -20,22 +20,24 @@ data class StatisticsUIState (
     val currentStreak: Int = 0,
     val bestStreak: Int = 0,
     val isStreakLost: Boolean = false,
-    val todaySessions: List<SessionData> = emptyList(),
+    val todaySessions: List<SessionHistoryItem> = emptyList(),
+    val historySessions: List<SessionHistoryItem> = emptyList(),
     val weeklyChartData: List<DailyFocusMetrics> = emptyList(),
     val allTimeMetrics: AllTimeMetrics = AllTimeMetrics(0, 0f, 0 ,0)
 ) : Parcelable
 
+
 @Parcelize
-data class SessionData(
-    val id: Int,
-    val missionName: String,
-    val plannedDurationMinutes: Int,
-    val actualDurationMinutes: Int,
+data class SessionHistoryItem(
+    val id: String,
+    val dataTimeStr: String, // Matches your UI exactly
+    val title: String,       // Mission Name
+    val durationMinutes: Int, // Actual Minutes focused
+    val plannedMinutes: Int,  // Needed for Today's Log expansion
     val isCompleted: Boolean,
-    val date: String,
-    val phonePickups: Int,
+    val pickups: Int,
     val appSwitches: Int,
-    val focusScoreImpact: Int
+    val scoreImpact: Int
 ): Parcelable
 
 @Parcelize

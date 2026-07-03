@@ -50,6 +50,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -71,41 +72,33 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.zenith.ui.theme.SoftIndigo
 
-data class SessionHistoryItem(
-    val id: String,
-    val dataTimeStr: String,
-    val title: String,
-    val durationMinutes: Int,
-    val isCompleted: Boolean,
-    val pickups: Int,
-    val appSwitches: Int,
-    val scoreImpact: Int
-)
-
 @Composable
 fun SessionHistoryScreen(
+    viewModel: StatisticsViewModel,
     onBackClick: () -> Unit
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+
     val haptic = LocalHapticFeedback.current
 
-    // Dummy Data
-    var allSessions = remember {
-        listOf(
-            SessionHistoryItem("1", "JUN 21 • 5:50 PM", "AnkiDroid PR #20849", 25, true, 0, 1, 130),
-            SessionHistoryItem("2", "JUN 21 • 3:15 PM", "Chapter 4 Reading", 50, false, 3, 5, -20),
-            SessionHistoryItem("3", "JUN 20 • 9:00 AM", "System Architecture", 45, true, 0, 0, 200)
-        )
-    }
+//    // Dummy Data
+//    var allSessions = remember {
+//        listOf(
+//            SessionHistoryItem("1", "JUN 21 • 5:50 PM", "AnkiDroid PR #20849", 25, true, 0, 1, 130),
+//            SessionHistoryItem("2", "JUN 21 • 3:15 PM", "Chapter 4 Reading", 50, false, 3, 5, -20),
+//            SessionHistoryItem("3", "JUN 20 • 9:00 AM", "System Architecture", 45, true, 0, 0, 200)
+//        )
+//    }
 
     var selectedIds by remember { mutableStateOf(setOf<String>()) }
     val isSelectionMode by remember { derivedStateOf { selectedIds.isNotEmpty() } }
     var selectedFilter by rememberSaveable { mutableStateOf("All") }
     var showDeleteDialog by remember { mutableStateOf(false) }
-    val filteredSessions = remember(selectedFilter){
+    val filteredSessions = remember(selectedFilter, uiState.historySessions){
         val list = when(selectedFilter) {
-            "Completed" -> allSessions.filter { it.isCompleted }
-            "Abandoned" -> allSessions.filter { !it.isCompleted }
-            else -> allSessions
+            "Completed" -> uiState.historySessions.filter { it.isCompleted }
+            "Abandoned" -> uiState.historySessions.filter { !it.isCompleted }
+            else -> uiState.historySessions
         }
 
         list.reversed()
@@ -315,7 +308,7 @@ fun SessionHistoryScreen(
             text = { Text("Are you sure you want to delete ${selectedIds.size} session(s)? This action is irreversible.", color = Color.Gray) },
             confirmButton = {
                 TextButton(onClick = {
-                    allSessions = allSessions.filterNot { selectedIds.contains(it.id) }
+                    viewModel.deleteSessions(selectedIds.map { it.toInt() })
                     selectedIds = emptySet()
                     showDeleteDialog = false
                 }) {
