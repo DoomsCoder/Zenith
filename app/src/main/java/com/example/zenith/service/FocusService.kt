@@ -67,12 +67,22 @@ class FocusService : Service(), SensorEventListener {
      */
     override fun onBind(intent: Intent?): IBinder? = null
 
+    companion object {
+        const val ACTION_STOP = "ACTION_STOP"
+        const val EXTRA_IS_FINISHED = "EXTRA_IS_FINISHED"
+    }
+
     /**
      * Entry point of the service. Triggered by createNotificationChannel() from the Activity.
      */
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        createNotificationChannel()
 
+        if (intent?.action == ACTION_STOP) {
+            val isExplicitFinish = intent.getBooleanExtra(EXTRA_IS_FINISHED, false)
+            handleStopCommand(isExplicitFinish)
+            return START_NOT_STICKY
+        }
+        createNotificationChannel()
         val notification = buildNotification()
 
         /**
@@ -135,17 +145,7 @@ class FocusService : Service(), SensorEventListener {
 
     }
 
-    override fun onTaskRemoved(rootIntent: Intent?) {
-        super.onTaskRemoved(rootIntent)
-
-        stopSelf()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-        sensorManager.unregisterListener(this)
-
+    private fun handleStopCommand(isExplicitFinish: Boolean) {
         // Update the session in background
         sessionScope.launch {
             if (currentSessionId != -1L) {
@@ -163,8 +163,17 @@ class FocusService : Service(), SensorEventListener {
                     )
                 }
             }
+
+            stopForeground(STOP_FOREGROUND_REMOVE)
+            stopSelf()
         }
 
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        sensorManager.unregisterListener(this)
         // Cancel the scope to prevent memory leak's
         sessionScope.cancel()
     }

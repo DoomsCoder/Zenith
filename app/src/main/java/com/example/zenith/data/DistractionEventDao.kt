@@ -27,4 +27,8 @@ interface DistractionEventDao {
     // Total pickups ever detected for All-Time Telemetry
     @Query("SELECT COUNT(*) FROM distraction_events WHERE distractionType = 'PICKUP'")
     fun getTotalPickupCounts(): Flow<Int>
+
+    // Count app switches globally
+    @Query("SELECT COUNT(*) FROM distraction_events WHERE distractionType = 'APP_SWITCH'")
+    fun getTotalAppSwitchesCount(): Flow<Int>
 }
