@@ -1,7 +1,6 @@
 package com.example.zenith.ui.screens.statistics
 
 import androidx.activity.compose.BackHandler
-import androidx.annotation.ColorRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -16,7 +15,6 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -64,7 +62,6 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -80,15 +77,6 @@ fun SessionHistoryScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     val haptic = LocalHapticFeedback.current
-
-//    // Dummy Data
-//    var allSessions = remember {
-//        listOf(
-//            SessionHistoryItem("1", "JUN 21 • 5:50 PM", "AnkiDroid PR #20849", 25, true, 0, 1, 130),
-//            SessionHistoryItem("2", "JUN 21 • 3:15 PM", "Chapter 4 Reading", 50, false, 3, 5, -20),
-//            SessionHistoryItem("3", "JUN 20 • 9:00 AM", "System Architecture", 45, true, 0, 0, 200)
-//        )
-//    }
 
     var selectedIds by remember { mutableStateOf(setOf<String>()) }
     val isSelectionMode by remember { derivedStateOf { selectedIds.isNotEmpty() } }

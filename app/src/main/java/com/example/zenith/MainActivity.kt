@@ -39,6 +39,7 @@ import com.example.zenith.ui.screens.focus.FocusViewModel
 import com.example.zenith.ui.screens.settings.SettingsScreen
 import com.example.zenith.ui.screens.statistics.SessionHistoryScreen
 import com.example.zenith.ui.screens.statistics.StatisticsScreen
+import com.example.zenith.ui.screens.statistics.StatisticsViewModel
 import com.example.zenith.ui.theme.ZenithTheme
 
 class MainActivity : ComponentActivity() {
@@ -56,6 +57,10 @@ class MainActivity : ComponentActivity() {
                 val backStack = navKeyBackStack as NavBackStack<Destination>
 
                 val focusViewModel: FocusViewModel = viewModel(
+                    viewModelStoreOwner = LocalViewModelStoreOwner.current!!
+                )
+
+                val statsViewModel: StatisticsViewModel = viewModel(
                     viewModelStoreOwner = LocalViewModelStoreOwner.current!!
                 )
 
@@ -97,10 +102,16 @@ class MainActivity : ComponentActivity() {
                             when (key) {
                                 Destination.Focus -> FocusScreen(viewModel = focusViewModel)
                                 Destination.Stats -> StatisticsScreen(
-                                    onNavigateToHistory = { backStack.add(Destination.SessionHistory) }
+                                    viewModel = statsViewModel,
+                                    onNavigateToHistory = { backStack.add(Destination.SessionHistory) },
+                                    onNavigateToFocus = {
+                                        backStack.clear()
+                                        backStack.add(Destination.Focus)
+                                    }
                                 )
                                 Destination.Settings -> SettingsScreen()
                                 Destination.SessionHistory -> SessionHistoryScreen(
+                                    viewModel = statsViewModel,
                                     onBackClick = { backStack.remove(Destination.SessionHistory) }
                                 )
                             }
