@@ -5,7 +5,9 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
+import com.example.zenith.ui.screens.statistics.SessionWithDistractions
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -26,6 +28,10 @@ interface FocusSessionDao {
     // Sum total focus time for All-Time Telemetry
     @Query("SELECT SUM(actualDurationSeconds) FROM focus_sessions WHERE isCompleted = 1")
     fun getTotalFocusTimeSeconds(): Flow<Long?>
+
+    @Transaction
+    @Query("SELECT * FROM focus_sessions ORDER BY timestamp DESC")
+    fun getSessionsWithDistraction(): Flow<List<SessionWithDistractions>>
 
     // Get active days for Streak calculation (Returns YYYY-MM-DD strings)
     @Query("SELECT DISTINCT(date(timestamp / 1000, 'unixepoch', 'localtime')) FROM focus_sessions WHERE isCompleted = 1 ORDER BY timestamp DESC")
