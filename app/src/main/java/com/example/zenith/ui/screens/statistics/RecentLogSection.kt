@@ -28,23 +28,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.zenith.ui.theme.MutedGray
 
-data class RecentSessionSummary(
-    val title: String,
-    val durationMinutes: Int,
-    val isCompleted: Boolean
-)
 @Composable
 fun RecentLogSection(
+    sessions: List<SessionHistoryItem>,
     onViewAllSessionsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Dummy data
-    val recentSessions = listOf(
-        RecentSessionSummary("Deep Work - PR Review", 25, true),
-        RecentSessionSummary("Chapter 4 Reading", 18, false),
-        RecentSessionSummary("System Architecture Design", 45, true)
-    )
-
     Column(
         modifier = modifier.fillMaxWidth()
     ) {
@@ -61,10 +50,10 @@ fun RecentLogSection(
 
         Spacer(Modifier.height(16.dp))
 
-        recentSessions.forEachIndexed { index, session ->
+        sessions.forEachIndexed { index, session ->
             RecentSessionRow(session = session)
 
-            if (index < recentSessions.size - 1) {
+            if (index < sessions.size - 1) {
                 HorizontalDivider(
                     thickness = 1.dp,
                     color = Color.White.copy(0.05f)
@@ -102,7 +91,7 @@ fun RecentLogSection(
 }
 
 @Composable
-private fun RecentSessionRow(session: RecentSessionSummary) {
+private fun RecentSessionRow(session: SessionHistoryItem) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp),
         horizontalArrangement = Arrangement.SpaceBetween,

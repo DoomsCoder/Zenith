@@ -51,11 +51,15 @@ import com.example.zenith.ui.theme.SoftIndigo
 @SuppressLint("DefaultLocale")
 @Composable
 fun FocusScoreSection(
-    score: Int = 2297,
-    weeklyDelta: Int = 340,
-    currentStreak: Int = 12,
-    bestStreak: Int = 15,
-    isStreakLost: Boolean = false,
+    score: Int,
+    weeklyDelta: Int,
+    currentStreak: Int,
+    bestStreak: Int,
+    isStreakLost: Boolean,
+    tierProgress: Float,
+    currentTierLabel: String,
+    breakdown: ScoreBreakdown,
+    onRecoveryClick: () -> Unit,
     onShowRules: () -> Unit
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -121,7 +125,7 @@ fun FocusScoreSection(
             )
         )
         Text(
-            "── DEEP WORKER ──",
+            "── $currentTierLabel ──",
             style = MaterialTheme.typography.labelSmall.copy(
                 fontFamily = FontFamily.Monospace,
                 letterSpacing = 4.sp,
@@ -134,8 +138,9 @@ fun FocusScoreSection(
     Spacer(modifier = Modifier.height(32.dp))
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            val percentage = (tierProgress * 100).toInt()
             Text(
-                "56% to FLOW STATE",
+                "$percentage% to $currentTierLabel",
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontFamily = FontFamily.Monospace,
                     color = MutedGray.copy(0.6f)
@@ -151,9 +156,12 @@ fun FocusScoreSection(
         }
         Spacer(modifier = Modifier.height(8.dp))
         LinearProgressIndicator(
-            progress = { 0.56f }, modifier = Modifier
+            progress = { tierProgress },
+            modifier = Modifier
                 .fillMaxWidth()
-                .height(2.dp), color = SoftIndigo, trackColor = Color.White.copy(0.05f)
+                .height(2.dp),
+            color = SoftIndigo,
+            trackColor = Color.White.copy(0.05f)
         )
     }
 
@@ -169,7 +177,8 @@ fun FocusScoreSection(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(24.dp), verticalAlignment = Alignment.CenterVertically
+                    .padding(24.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(
                     modifier = Modifier.weight(1f),
@@ -244,7 +253,7 @@ fun FocusScoreSection(
                 )
                 Spacer(Modifier.height(24.dp))
                 OutlinedButton(
-                    onClick = {},
+                    onClick = onRecoveryClick,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     border = BorderStroke(1.dp, SoftIndigo.copy(0.3f))
@@ -301,12 +310,12 @@ fun FocusScoreSection(
             }
             if (expanded) {
                 Spacer(Modifier.height(24.dp))
-                TelemetryRow("Sessions Completed", "+1,200 pts", valueColor = SoftIndigo)
-                TelemetryRow("Focus Minutes", "+847 pts", valueColor = SoftIndigo)
-                TelemetryRow("Abandonments", "-150 pts", valueColor = Color(0xFFEF5350))
-                TelemetryRow("Pickups Detected", "-50 pts", valueColor = Color(0xFFEF5350))
-                TelemetryRow("App Switches", "-50 pts", valueColor = Color(0xFFEF5350))
-                TelemetryRow("Streak Bonus", "+500 pts", valueColor = SoftIndigo)
+                TelemetryRow("Sessions Completed", "+${breakdown.completionPoints} pts", valueColor = SoftIndigo)
+                TelemetryRow("Focus Minutes", "+${breakdown.focusMinutePoints} pts", valueColor = SoftIndigo)
+                TelemetryRow("Abandonments", "-${breakdown.abandonmentPenalty} pts", valueColor = Color(0xFFEF5350))
+                TelemetryRow("Pickups Detected", "-${breakdown.pickupPenalty} pts", valueColor = Color(0xFFEF5350))
+                TelemetryRow("App Switches", "-${breakdown.appSwitchPenalty} pts", valueColor = Color(0xFFEF5350))
+                TelemetryRow("Streak Bonus", "+${breakdown.streakBonus} pts", valueColor = SoftIndigo)
                 Spacer(Modifier.height(16.dp))
                 HorizontalDivider(color = Color.White.copy(0.05f))
                 Spacer(Modifier.height(16.dp))

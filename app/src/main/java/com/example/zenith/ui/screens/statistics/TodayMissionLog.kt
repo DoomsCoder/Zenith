@@ -54,12 +54,12 @@ import kotlinx.parcelize.Parcelize
 
 @Composable
 fun TodayMissionLogSection(
-    sessions: List<SessionData>,
+    sessions: List<SessionHistoryItem>,
     onStartSessionClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     // Accordion State: Tracks which card ID is expanded. null means all are closed.
-    var expandedSessionId by remember { mutableStateOf<Int?>(null) }
+    var expandedSessionId by remember { mutableStateOf<String?>(null) }
 
     Column(modifier = modifier.fillMaxWidth()) {
         // Section Header
@@ -111,7 +111,7 @@ fun TodayMissionLogSection(
 
 @Composable
 fun ExpandableSessionCard(
-    session: SessionData,
+    session: SessionHistoryItem,
     isExpanded: Boolean,
     onToggle: () -> Unit
 ) {
@@ -136,7 +136,7 @@ fun ExpandableSessionCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = session.missionName,
+                    text = session.title,
                     modifier = Modifier.weight(1f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -147,7 +147,7 @@ fun ExpandableSessionCard(
                 )
 
                 Text(
-                    text = "${session.actualDurationMinutes} min",
+                    text = "${session.durationMinutes} min",
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontFamily = FontFamily.Monospace,
                         color = MutedGray
@@ -171,10 +171,10 @@ fun ExpandableSessionCard(
                 Spacer(modifier = Modifier.height(16.dp))
                 HorizontalDivider(color = Color.White.copy(0.05f))
                 Spacer(modifier = Modifier.height(16.dp))
-                TelemetryRow("MISSION NAME", session.missionName)
-                TelemetryRow("DATE & TIME", session.date)
-                TelemetryRow("PLANNED DURATION", "${session.plannedDurationMinutes} min")
-                TelemetryRow("ACTUAL DURATION", "${session.actualDurationMinutes} min")
+                TelemetryRow("MISSION NAME", session.title)
+                TelemetryRow("DATE & TIME", session.dataTimeStr)
+                TelemetryRow("PLANNED DURATION", "${session.plannedMinutes} min")
+                TelemetryRow("ACTUAL DURATION", "${session.durationMinutes} min")
                 TelemetryRow(
                     "STATUS", value = statusText,
                     valueColor = statusColor
@@ -194,8 +194,8 @@ fun ExpandableSessionCard(
 
                 TelemetryRow(
                     "Phone Pickups",
-                    session.phonePickups.toString(),
-                    getTelemetryColor(session.phonePickups)
+                    session.pickups.toString(),
+                    getTelemetryColor(session.pickups)
                 )
                 TelemetryRow(
                     "App Switches",
@@ -204,8 +204,8 @@ fun ExpandableSessionCard(
                 )
                 TelemetryRow(
                     "Focus Score Impact",
-                    "${if (session.focusScoreImpact >= 0) "+" else ""}${session.focusScoreImpact} pts",
-                    if (session.focusScoreImpact >= 0) Color(0xFF4CAF50) else Color(0xFFEF5350)
+                    "${if (session.scoreImpact >= 0) "+" else ""}${session.scoreImpact} pts",
+                    if (session.scoreImpact >= 0) Color(0xFF4CAF50) else Color(0xFFEF5350)
                 )
             }
         }
@@ -289,14 +289,13 @@ fun EmptyStateCard(onStartSessionClick: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(32.dp))
             OutlinedButton(
-                onClick = {},
+                onClick = onStartSessionClick,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 border = BorderStroke(1.dp, SoftIndigo.copy(0.3f))
             ) {
                 Text(
                     " START FIRST SESSION ",
-                    modifier = Modifier.clickable { onStartSessionClick() },
                     style = MaterialTheme.typography.labelLarge.copy(
                         fontFamily = FontFamily.Monospace,
                         fontWeight = FontWeight.Bold,
@@ -319,31 +318,6 @@ private fun getTelemetryColor(count: Int): Color {
 @Preview(showBackground = true, backgroundColor = 0xFF121212)
 @Composable
 fun TodayMissionLogPreview() {
-    val dummySessions = listOf(
-        SessionData(
-            id = 1,
-            missionName = "AnkiDroid PR #20849",
-            plannedDurationMinutes = 120,
-            actualDurationMinutes = 120,
-            isCompleted = true,
-            date = "Jun 16, 3:05 PM",
-            phonePickups = 0,
-            appSwitches = 1,
-            focusScoreImpact = 240
-        ),
-        SessionData(
-            id = 2,
-            missionName = "OpenAI Buildathon Wealnex Setup",
-            plannedDurationMinutes = 45,
-            actualDurationMinutes = 14,
-            isCompleted = false,
-            date = "Jun 16, 4:20 PM",
-            phonePickups = 3,
-            appSwitches = 5,
-            focusScoreImpact = -50
-        )
-    )
-
     Box(
         modifier = Modifier
             .fillMaxSize()
