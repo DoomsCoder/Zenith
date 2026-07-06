@@ -47,6 +47,7 @@ import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
 import com.patrykandpatrick.vico.compose.common.component.rememberTextComponent
+import com.patrykandpatrick.vico.core.cartesian.data.AxisValueOverrider
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.columnSeries
 import com.patrykandpatrick.vico.core.cartesian.layer.ColumnCartesianLayer
@@ -205,7 +206,17 @@ fun ThisWeeksFocusChart(
                             }
                         ),
                         mergeMode = { ColumnCartesianLayer.MergeMode.Stacked },
-                        columnCollectionSpacing = 8.dp
+                        columnCollectionSpacing = 8.dp,
+
+                        axisValueOverrider = remember {
+                            object : AxisValueOverrider {
+                                // Always start at 0
+                                override fun getMinY(minY: Double, maxY: Double, extraStore: ExtraStore) = 0.0
+
+                                // Ceiling is 60 OR the actual maximum focus time, whichever is higher
+                                override fun getMaxY(minY: Double, maxY: Double, extraStore: ExtraStore) = maxOf(60.0, maxY)
+                            }
+                        }
                     ),
                     // Named Parameter: Bottom Axis
                     bottomAxis = rememberBottomAxis(
