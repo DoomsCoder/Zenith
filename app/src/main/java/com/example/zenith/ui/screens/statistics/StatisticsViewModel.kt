@@ -11,7 +11,9 @@ import com.example.zenith.ui.common.asUiStateMachine
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 class StatisticsViewModel(
@@ -41,11 +43,14 @@ class StatisticsViewModel(
         viewModelScope.launch {
 
             combine(
-                sessionDao.getAllSessions(),
+                sessionDao.getSessionsWithDistraction(),
                 sessionDao.getActiveFocusDays(),
                 distractionDao.getTotalPickupCounts(),
                 distractionDao.getTotalAppSwitchesCount()
-            ) { allSessions, activeDays, totalPickups, totalSwitches ->
+            ) { sessionWithDistractions, activeDays, totalPickups, totalSwitches ->
+
+                val historyItems = sessionWithDistractions.map { it.toUIItem() }
+                val allSessions = sessionWithDistractions.map { it.session }
 
                 val breakdown = FocusScoreEvaluator.calculateGrandBreakdown(
                     allSessions = allSessions,
@@ -54,13 +59,13 @@ class StatisticsViewModel(
                     streakDays = activeDays.size
                 )
 
+                val weeklyDelta = calculateWeeklyDelta(historyItems)
                 val streakInfo = StreakLogic.calculateStreaks(activeDays)
 
                 val chartData = prepareChartData(allSessions)
-
                 val today = LocalDate.now()
-                val sessionDataList = allSessions.map { it.toSessionData() }
-                val todaySessions = sessionDataList.filter {
+
+                val todaySessions = historyItems.filter {
                     it.dataTimeStr.contains(today.format(DateTimeFormatter.ofPattern("MMM dd")))
                 }
 
@@ -80,6 +85,7 @@ class StatisticsViewModel(
                     copy(
                         isLoading = false,
                         totalScore = breakdown.totalScore,
+                        weeklyDelta = weeklyDelta,
                         currentTier = FocusScoreEvaluator.getTierForScore(breakdown.totalScore),
                         tierProgress = FocusScoreEvaluator.getProgressToNextTier(breakdown.totalScore),
                         scoreBreakdown = breakdown,
@@ -87,7 +93,7 @@ class StatisticsViewModel(
                         bestStreak = streakInfo.bestStreak,
                         isStreakLost = streakInfo.isStreakLost,
                         todaySessions = todaySessions,
-                        historySessions = sessionDataList,
+                        historySessions = historyItems,
                         weeklyChartData = chartData,
                         allTimeMetrics = telemetry
                     )
@@ -100,41 +106,50 @@ class StatisticsViewModel(
         val today = LocalDate.now()
         return (6 downTo 0).map { i ->
             val date = today.minusDays(i.toLong())
-            val dataStr = date.toString()
-            val dailySessions = sessions.filter {
-                LocalDate.ofEpochDay(it.timestamp / 86400000).toString() == dataStr
-            }
+            val dailySessions = sessions.filter { Instant.ofEpochMilli(it.timestamp).atZone(ZoneId.systemDefault()).toLocalDate() == date }
             DailyFocusMetrics(
-                date = date,
-                totalMinutes = dailySessions.sumOf { it.actualDurationSeconds } / 60,
-                sessionCount = dailySessions.size
+                date.toEpochDay(),
+                dailySessions.sumOf { it.actualDurationSeconds } / 60,
+                dailySessions.size
             )
         }
     }
 
-    private fun FocusSession.toSessionData(): SessionHistoryItem {
-        val pickupsCount = 0
-        val switchesCount = 0
+    private fun SessionWithDistractions.toUIItem(): SessionHistoryItem {
+        val pCount = distractions.count { it.distractionType == "PICKUP" }
+        val sCount = distractions.count { it.distractionType == "APP_SWITCH"}
 
         val impact = FocusScoreEvaluator.calculateSessionScore(
-            isCompleted = isCompleted,
-            durationSeconds = actualDurationSeconds,
-            pickups = pickupsCount,
-            appSwitches = switchesCount
+            isCompleted = session.isCompleted,
+            durationSeconds = session.actualDurationSeconds,
+            pickups = pCount,
+            appSwitches = sCount
         )
 
         return SessionHistoryItem(
-            id = id.toString(),
-            dataTimeStr = java.time.Instant.ofEpochMilli(timestamp)
-                .atZone(java.time.ZoneId.systemDefault())
-                .format(java.time.format.DateTimeFormatter.ofPattern("MMM dd • h:mm a")),
-            title = missionName,
-            durationMinutes = actualDurationSeconds / 60,
-            plannedMinutes = plannedDurationMinutes,
-            isCompleted = isCompleted,
-            pickups = pickupsCount,
-            appSwitches = switchesCount,
+            id = session.id.toString(),
+            dataTimeStr = Instant.ofEpochMilli(session.timestamp)
+                .atZone(ZoneId.systemDefault())
+                .format(DateTimeFormatter.ofPattern("MMM dd • h:mm a")),
+            timestampIso = Instant.ofEpochMilli(session.timestamp).toString(),
+            title = session.missionName,
+            durationMinutes = session.actualDurationSeconds / 60,
+            plannedMinutes = session.plannedDurationMinutes,
+            isCompleted = session.isCompleted,
+            pickups = pCount,
+            appSwitches = sCount,
             scoreImpact = impact
         )
+    }
+
+    private fun calculateWeeklyDelta(items: List<SessionHistoryItem>): Int {
+        val now = System.currentTimeMillis()
+        val oneWeek = 7 * 24 * 60 * 60 * 1000L
+        val thisWeekPoints = items.filter { (now - Instant.parse(it.timestampIso).toEpochMilli()) <= oneWeek }.sumOf { it.scoreImpact }
+        val lastWeekPoints = items.filter {
+            val age = now - Instant.parse(it.timestampIso).toEpochMilli()
+            age > oneWeek && age <= (oneWeek * 2)
+        }.sumOf { it.scoreImpact }
+        return thisWeekPoints - lastWeekPoints
     }
 }

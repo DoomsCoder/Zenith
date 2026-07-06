@@ -31,6 +31,7 @@ data class StatisticsUIState (
 data class SessionHistoryItem(
     val id: String,
     val dataTimeStr: String, // Matches your UI exactly
+    val timestampIso: String,
     val title: String,       // Mission Name
     val durationMinutes: Int, // Actual Minutes focused
     val plannedMinutes: Int,  // Needed for Today's Log expansion
@@ -42,10 +43,12 @@ data class SessionHistoryItem(
 
 @Parcelize
 data class DailyFocusMetrics(
-    val date: LocalDate,
+    val epochDay: Long,
     val totalMinutes: Int,
     val sessionCount: Int
-): Parcelable
+): Parcelable {
+    val date: LocalDate get() = LocalDate.ofEpochDay(epochDay)
+}
 
 @Parcelize
 data class AllTimeMetrics(
