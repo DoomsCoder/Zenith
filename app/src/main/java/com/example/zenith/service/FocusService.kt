@@ -4,6 +4,7 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
+import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Intent
 import android.content.pm.ServiceInfo
@@ -23,11 +24,13 @@ import com.example.zenith.data.FocusSession
 import com.example.zenith.data.FocusSessionDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
+import kotlin.math.pow
 import kotlin.math.sqrt
 
 /**
@@ -54,8 +57,11 @@ class FocusService : Service(), SensorEventListener {
     private val channelID = "focus_service_channel"
     private var currentSessionId: Long = -1
 
-    private var lastEventTime: Long = 0
+    private var monitoringJob: Job? = null
 
+    private var lastPickupTime: Long = 0
+    private var lastAppSwitchTime: Long = 0
+    private var lastCheckedTimestamp: Long = System.currentTimeMillis()
     private val sessionScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     /**
@@ -108,24 +114,26 @@ class FocusService : Service(), SensorEventListener {
         val missionName = intent?.getStringExtra("MISSION_NAME") ?: "Untitled Mission"
         val plannedMins = intent?.getIntExtra("PLANNED_MINUTES",25) ?: 25
 
-        sessionScope.launch {
-            // Only create new session if we don't have active event
-            if (currentSessionId == -1L) {
-                val newSession = FocusSession(
-                    missionName = missionName,
-                    plannedDurationMinutes = plannedMins,
-                    actualDurationSeconds = 0,
-                    isCompleted = false,
-                    timestamp = System.currentTimeMillis()
-                )
+        if (monitoringJob == null) {
+            monitoringJob = sessionScope.launch {
+                if (currentSessionId == -1L) {
+                    val newSession = FocusSession(
+                        missionName = missionName,
+                        plannedDurationMinutes = plannedMins,
+                        actualDurationSeconds = 0,
+                        isCompleted = false,
+                        timestamp = System.currentTimeMillis()
+                    )
 
-                currentSessionId = focusSessionDao.insertSession(newSession)
-            }
+                    currentSessionId = focusSessionDao.insertSession(newSession)
+                }
 
-            while (true) {
+                lastCheckedTimestamp = System.currentTimeMillis()
 
-                checkForegroundApp()
-                delay(2000)
+                while (true) {
+                    detectAppSwitches()
+                    delay(3000)
+                }
             }
         }
 
@@ -147,6 +155,8 @@ class FocusService : Service(), SensorEventListener {
 
     private fun handleStopCommand(isExplicitFinish: Boolean) {
         // Update the session in background
+        monitoringJob?.cancel()
+        monitoringJob = null
         sessionScope.launch {
             if (currentSessionId != -1L) {
                 val session = focusSessionDao.getSessionById(currentSessionId.toInt())
@@ -172,6 +182,7 @@ class FocusService : Service(), SensorEventListener {
 
     override fun onDestroy() {
         super.onDestroy()
+        monitoringJob?.cancel()
 
         sensorManager.unregisterListener(this)
         // Cancel the scope to prevent memory leak's
@@ -207,69 +218,86 @@ class FocusService : Service(), SensorEventListener {
             .build()
     }
 
-    private suspend fun checkForegroundApp() {
+    private fun detectAppSwitches() {
 
-        val endtime = System.currentTimeMillis()
-        val beginTime = endtime - (1000 * 60 * 10)
-        val queryUsageStatsList = usageStatsManager.queryUsageStats(
-            UsageStatsManager.INTERVAL_DAILY,
-            beginTime,
-            endtime
-        )
+        val now = System.currentTimeMillis()
+        val events = usageStatsManager.queryEvents(lastCheckedTimestamp, now)
+        val event = UsageEvents.Event()
 
-        val mostRecentPackage = queryUsageStatsList.maxByOrNull { it.lastTimeUsed }?.packageName
+        var detectedViolation = false
 
-        if (endtime - lastEventTime > 5000) {
-            lastEventTime = endtime
+        while (events.hasNextEvent()) {
+            events.getNextEvent(event)
 
-            if (mostRecentPackage != null && mostRecentPackage != packageName) {
-                val event = DistractionEvent(
-                    sessionId = currentSessionId.toInt(),
-                    timeStamp = lastEventTime,
-                    distractionType = "APP_SWITCH"
-                )
+            val eventType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                UsageEvents.Event.ACTIVITY_RESUMED
+            } else {
+                @Suppress("DEPRECATION")
+                UsageEvents.Event.MOVE_TO_FOREGROUND
+            }
 
-                distractionEventDao.insertEvent(event)
-
-                Log.d("FocusService","Database: Saved App Switch Event")
+            if (event.eventType == eventType) {
+                if (event.packageName != packageName && !isSystemPackage(event.packageName)) {
+                    detectedViolation = true
+                }
             }
         }
+
+        if (detectedViolation) {
+
+            if (now - lastAppSwitchTime > 5000) {
+                lastAppSwitchTime = now
+                saveDistraction("APP_SWITCH")
+                Log.d("FocusService","Event: App Switch Detected!")
+            }
+        }
+
+        lastCheckedTimestamp = now
+    }
+
+    override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
+        // we don't use this now
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
         if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
-            val x = event.values[0]
-            val y = event.values[1]
-            val z = event.values[2]
 
-            val magnitude = sqrt(x * x + y * y + z * z)
+            val magnitude = sqrt(event.values[0].pow(2) + event.values[1].pow(2) + event.values[2].pow(2))
 
-            val threshold = 1.5f
+            val threshold = 2.0f
 
             if (abs( magnitude - SensorManager.GRAVITY_EARTH) >= threshold) {
                 val currentTime = System.currentTimeMillis()
 
-                if (currentTime - lastEventTime > 5000) {
-                    lastEventTime = currentTime
+                if (currentTime - lastPickupTime > 10000) {
+                    lastPickupTime= currentTime
 
                     Log.d("FocusService", "Pickup detected! Magnitude: $magnitude")
 
-                    sessionScope.launch {
-                        val event = DistractionEvent(
-                            sessionId = currentSessionId.toInt(),
-                            timeStamp = lastEventTime,
-                            distractionType = "PICKUP"
-                        )
-
-                        distractionEventDao.insertEvent(event)
-                        Log.d("FocusService", "Database: Saved Pickup Event!")
-                    }
+                    saveDistraction("PICKUP")
+                    Log.d("FocusService", "Database: Saved Pickup Event!")
                 }
             }
         }
     }
 
-    override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
-
+    private fun saveDistraction(type: String) {
+        sessionScope.launch {
+            if (currentSessionId != -1L) {
+                distractionEventDao.insertEvent(
+                    DistractionEvent(
+                        sessionId = currentSessionId.toInt(),
+                        timeStamp = System.currentTimeMillis(),
+                        distractionType = type
+                    )
+                )
+            }
+        }
     }
+
+    private fun isSystemPackage(pkg: String): Boolean {
+        return pkg == "com.android.systemui" || pkg.contains("launcher") || pkg == "android"
+    }
+
+
 }
