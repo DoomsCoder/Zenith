@@ -134,7 +134,10 @@ fun StatisticsScreen(
                 containerColor = Color(0xFF121212),
                 dragHandle = { BottomSheetDefaults.DragHandle(color = Color.White.copy(0.1f))}
             ) {
-                EngineRulesContent { showRules = false }
+                EngineRulesContent(
+                    currentTierLabel = uiState.currentTier.label,
+                    onClose = { showRules = false }
+                )
             }
         }
     }

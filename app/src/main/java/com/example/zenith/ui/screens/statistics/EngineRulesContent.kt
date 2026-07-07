@@ -46,7 +46,10 @@ private val SoftRed = Color(0xFFEF5350)
 private val SoftGreen = Color(0xFF4CAF50)
 
 @Composable
-fun EngineRulesContent(onClose: () -> Unit) {
+fun EngineRulesContent(
+    currentTierLabel: String,
+    onClose: () -> Unit
+) {
 
     val scrollState = rememberScrollState()
     Column(
@@ -158,15 +161,15 @@ fun EngineRulesContent(onClose: () -> Unit) {
             border = BorderStroke(1.dp, Color.DarkGray.copy(alpha = 0.3f))
         ) {
             Column {
-                TierRow(id = "T1", name = "INITIALIZING", range = "0 - 499")
+                TierRow(id = "T1", name = "INITIALIZING", range = "0 - 499", tierLabel = currentTierLabel)
                 TierDivider()
-                TierRow(id = "T2", name = "BUILDING FOCUS", range = "500 - 1,499")
+                TierRow(id = "T2", name = "BUILDING FOCUS", range = "500 - 1,499", tierLabel = currentTierLabel)
                 TierDivider()
-                TierRow(id = "T3", name = "DEEP WORKER", range = "1,500 - 2,999", isCurrent = true)
+                TierRow(id = "T3", name = "DEEP WORKER", range = "1,500 - 2,999", tierLabel = currentTierLabel)
                 TierDivider()
-                TierRow(id = "T4", name = "FLOW STATE", range = "3,000 - 4,999")
+                TierRow(id = "T4", name = "FLOW STATE", range = "3,000 - 4,999", tierLabel = currentTierLabel)
                 TierDivider()
-                TierRow(id = "T5", name = "ZENITH ACHIEVED", range = "5,000+")
+                TierRow(id = "T5", name = "ZENITH ACHIEVED", range = "5,000+", tierLabel = currentTierLabel)
             }
         }
 
@@ -256,7 +259,8 @@ private fun TierDivider() {
 }
 
 @Composable
-private fun TierRow(id: String, name: String, range: String, isCurrent: Boolean = false) {
+private fun TierRow(id: String, name: String, range: String, tierLabel: String) {
+    val isCurrent = tierLabel == name
     val rowBg = if (isCurrent) SoftIndigo.copy(alpha = 0.1f) else Color.Transparent
     val contentColor = if (isCurrent) SoftIndigo else MutedGray
 
