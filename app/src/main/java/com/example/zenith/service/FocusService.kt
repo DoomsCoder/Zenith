@@ -1,12 +1,16 @@
 package com.example.zenith.service
 
+import android.app.IntentService
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -14,6 +18,9 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Build
 import android.os.IBinder
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.zenith.R
@@ -50,8 +57,8 @@ class FocusService : Service(), SensorEventListener {
     private lateinit var focusSessionDao: FocusSessionDao
     private lateinit var distractionEventDao: DistractionEventDao
     private lateinit var usageStatsManager: UsageStatsManager
-
     private lateinit var sensorManager: SensorManager
+    private lateinit var vibrator: Vibrator
 
     // Unique ID for the Notification Channel (Required for Android 8.0+)
     private val channelID = "focus_service_channel"
@@ -63,6 +70,15 @@ class FocusService : Service(), SensorEventListener {
     private var lastAppSwitchTime: Long = 0
     private var lastCheckedTimestamp: Long = System.currentTimeMillis()
     private val sessionScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
+    private val screenStartReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == Intent.ACTION_SCREEN_ON) {
+                handlePickupViolation("SCREEN_ON")
+            }
+        }
+
+    }
 
     /**
      * onBind is required by the Service class.
@@ -151,6 +167,16 @@ class FocusService : Service(), SensorEventListener {
         usageStatsManager = getSystemService(USAGE_STATS_SERVICE) as UsageStatsManager
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
 
+        vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vibratorManager.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            getSystemService(VIBRATOR_SERVICE) as Vibrator
+        }
+
+        val filter = IntentFilter(Intent.ACTION_SCREEN_ON)
+        registerReceiver(screenStartReceiver, filter)
     }
 
     private fun handleStopCommand(isExplicitFinish: Boolean) {
@@ -183,7 +209,7 @@ class FocusService : Service(), SensorEventListener {
     override fun onDestroy() {
         super.onDestroy()
         monitoringJob?.cancel()
-
+        unregisterReceiver(screenStartReceiver)
         sensorManager.unregisterListener(this)
         // Cancel the scope to prevent memory leak's
         sessionScope.cancel()
@@ -243,21 +269,15 @@ class FocusService : Service(), SensorEventListener {
             }
         }
 
-        if (detectedViolation) {
-
-            if (now - lastAppSwitchTime > 5000) {
+        if (detectedViolation && (now - lastAppSwitchTime > 5000)) {
                 lastAppSwitchTime = now
-                saveDistraction("APP_SWITCH")
-                Log.d("FocusService","Event: App Switch Detected!")
-            }
+                triggerPunishment("APP_SWITCH")
         }
 
         lastCheckedTimestamp = now
     }
 
-    override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
-        // we don't use this now
-    }
+    override fun onAccuracyChanged(p0: Sensor?, p1: Int) {}
 
     override fun onSensorChanged(event: SensorEvent?) {
         if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
@@ -267,18 +287,27 @@ class FocusService : Service(), SensorEventListener {
             val threshold = 2.0f
 
             if (abs( magnitude - SensorManager.GRAVITY_EARTH) >= threshold) {
-                val currentTime = System.currentTimeMillis()
-
-                if (currentTime - lastPickupTime > 10000) {
-                    lastPickupTime= currentTime
-
-                    Log.d("FocusService", "Pickup detected! Magnitude: $magnitude")
-
-                    saveDistraction("PICKUP")
-                    Log.d("FocusService", "Database: Saved Pickup Event!")
-                }
+                handlePickupViolation("ACCELEROMETER")
             }
         }
+    }
+
+    private fun handlePickupViolation(source: String) {
+        val now = System.currentTimeMillis()
+        if (now - lastPickupTime > 10000) {
+            lastPickupTime = now
+            triggerPunishment("PICKUP")
+            Log.d("FocusService", "Violation via $source")
+        }
+    }
+
+    private fun triggerPunishment(type: String) {
+        saveDistraction(type)
+
+        val timings = longArrayOf(0, 100, 50, 100)
+        val amplitudes = intArrayOf(0, 255, 0, 255)
+
+        vibrator.vibrate(VibrationEffect.createWaveform(timings,amplitudes, -1))
     }
 
     private fun saveDistraction(type: String) {
