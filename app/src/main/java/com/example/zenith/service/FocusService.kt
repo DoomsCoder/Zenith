@@ -18,6 +18,7 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Build
 import android.os.IBinder
+import android.os.Message
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
@@ -69,6 +70,11 @@ class FocusService : Service(), SensorEventListener {
     private var lastPickupTime: Long = 0
     private var lastAppSwitchTime: Long = 0
     private var lastCheckedTimestamp: Long = System.currentTimeMillis()
+    private var lastRoastTime: Long = 0
+    private var distractionStartTime: Long = 0
+    private var isCurrentlyDistracted = false
+    private var hasSentBrutalRoast = false
+
     private val sessionScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private val screenStartReceiver = object : BroadcastReceiver() {
@@ -244,34 +250,70 @@ class FocusService : Service(), SensorEventListener {
             .build()
     }
 
+    private fun updateNotification(title: String, message: String, isUrgent: Boolean = false) {
+        val builder = NotificationCompat.Builder(this, channelID)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle(title)
+            .setContentText(message)
+            .setOngoing(true)
+            .setCategory(Notification.CATEGORY_SERVICE)
+
+        if (isUrgent) {
+            builder.setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setDefaults(Notification.DEFAULT_ALL) // Dings and vibrates loudly
+        } else {
+            builder.setSilent(true) // Silent for normal roasts
+        }
+
+        val manager = getSystemService(NotificationManager::class.java)
+        manager.notify(1, builder.build())
+    }
+
     private fun detectAppSwitches() {
 
         val now = System.currentTimeMillis()
         val events = usageStatsManager.queryEvents(lastCheckedTimestamp, now)
         val event = UsageEvents.Event()
 
-        var detectedViolation = false
+        var latestForegroundPackage: String? = null
 
+        // 1. Scan events to see what the VERY LATEST app in the foreground is
         while (events.hasNextEvent()) {
             events.getNextEvent(event)
+            val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                UsageEvents.Event.ACTIVITY_RESUMED else UsageEvents.Event.MOVE_TO_FOREGROUND
 
-            val eventType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                UsageEvents.Event.ACTIVITY_RESUMED
-            } else {
-                @Suppress("DEPRECATION")
-                UsageEvents.Event.MOVE_TO_FOREGROUND
+            if (event.eventType == type) {
+                latestForegroundPackage = event.packageName
             }
+        }
 
-            if (event.eventType == eventType) {
-                if (event.packageName != packageName && !isSystemPackage(event.packageName)) {
-                    detectedViolation = true
+        // 2. LOGIC: Decide the state based on the latest package
+        if (latestForegroundPackage != null) {
+            if (latestForegroundPackage == packageName) {
+                // USER RETURNED TO ZENITH
+                if (isCurrentlyDistracted) {
+                    isCurrentlyDistracted = false
+                    updateNotification("ZENITH: FOCUS RESTORED", "Welcome back. Let's get to work.")
+                }
+            } else if (!isSystemPackage(latestForegroundPackage)) {
+                // USER IS IN A DISTRACTING APP
+                if (!isCurrentlyDistracted) {
+                    isCurrentlyDistracted = true
+                    distractionStartTime = now
+                    hasSentBrutalRoast = false
+                    triggerPunishment("APP_SWITCH") // Initial punishment
                 }
             }
         }
 
-        if (detectedViolation && (now - lastAppSwitchTime > 5000)) {
-                lastAppSwitchTime = now
-                triggerPunishment("APP_SWITCH")
+        if (isCurrentlyDistracted && !hasSentBrutalRoast) {
+            val timeAway = now - distractionStartTime
+            if (timeAway > 300000) { // 5 minutes in milliseconds
+                hasSentBrutalRoast = true
+                val roast = RoastManager.getRoast("BRUTAL")
+                updateNotification("CRITICAL FOCUS LOSS", roast, isUrgent = true)
+            }
         }
 
         lastCheckedTimestamp = now
@@ -306,8 +348,14 @@ class FocusService : Service(), SensorEventListener {
 
         val timings = longArrayOf(0, 100, 50, 100)
         val amplitudes = intArrayOf(0, 255, 0, 255)
-
         vibrator.vibrate(VibrationEffect.createWaveform(timings,amplitudes, -1))
+
+        val now = System.currentTimeMillis()
+        if (now - lastRoastTime > 30000) {
+            lastRoastTime = 0
+            val roast = RoastManager.getRoast(type)
+            updateNotification("ZENITH: FOCUS BROKEN", roast)
+        }
     }
 
     private fun saveDistraction(type: String) {
