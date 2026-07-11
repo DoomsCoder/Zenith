@@ -352,7 +352,7 @@ class FocusService : Service(), SensorEventListener {
 
         val now = System.currentTimeMillis()
         if (now - lastRoastTime > 30000) {
-            lastRoastTime = 0
+            lastRoastTime = now
             val roast = RoastManager.getRoast(type)
             updateNotification("ZENITH: FOCUS BROKEN", roast)
         }
