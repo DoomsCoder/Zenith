@@ -7,6 +7,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.example.zenith.data.AppDatabase
 import com.example.zenith.service.FocusService
+import com.example.zenith.service.SessionEventBus
 import com.example.zenith.ui.common.UiStateMachine
 import com.example.zenith.ui.common.asUiStateMachine
 import kotlinx.coroutines.Job
@@ -34,11 +35,34 @@ class FocusViewModel(
     private var abandonResetJob: Job? = null
 
     init {
+        viewModelScope.launch {
+            SessionEventBus.events.collect { event ->
+                when(event) {
+                    SessionEventBus.SessionEvent.PauseForCall -> handleCallPause()
+                    SessionEventBus.SessionEvent.ResumeAfterCall -> handleCallResume()
+                }
+
+            }
+        }
         if (!uiStateMachine.isStateRestored){
             syncWithDatabase()
         } else {
             if (uiState.value.sessionState == SessionState.RUNNING) {
                 syncWithDatabase()
+            }
+        }
+    }
+
+    private fun handleCallPause() {
+        focusTimerJob?.cancel()
+        uiStateMachine.update { copy(isPausedByCall = true) }
+    }
+
+    private fun handleCallResume() {
+        if (uiState.value.isPausedByCall) {
+            uiStateMachine.update { copy(isPausedByCall = false) }
+            if (uiState.value.sessionState == SessionState.RUNNING) {
+                startFocusTimer()
             }
         }
     }

@@ -23,8 +23,7 @@ data class FocusViewState (
     val remainingFocusSeconds: Int = 0,
     val totalFocusSeconds: Int = 0,
     val remainingPausedSeconds: Int = 300,
-    val lastSessionDuration: String = "",
-    val lastSessionTimestamp:String = "",
+    val isPausedByCall: Boolean = false,
     val snapshotBeforeAbandon: FocusViewState? = null
 ) : Parcelable {
     val progress: Float
