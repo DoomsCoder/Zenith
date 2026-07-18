@@ -54,15 +54,25 @@ class FocusViewModel(
     }
 
     private fun handleCallPause() {
+        if (uiState.value.sessionState == SessionState.IDLE) return
+
         focusTimerJob?.cancel()
+        pauseTimerJob?.cancel()
+
         uiStateMachine.update { copy(isPausedByCall = true) }
     }
 
     private fun handleCallResume() {
         if (uiState.value.isPausedByCall) {
             uiStateMachine.update { copy(isPausedByCall = false) }
-            if (uiState.value.sessionState == SessionState.RUNNING) {
-                startFocusTimer()
+            when (uiState.value.sessionState) {
+                SessionState.RUNNING -> {
+                    startFocusTimer()
+                }
+                SessionState.PAUSED -> {
+                    pausedSession()
+                }
+                else -> {}
             }
         }
     }
