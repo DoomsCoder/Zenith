@@ -193,17 +193,21 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
 
             // Status Section
 
-            val statusText = when (state.sessionState) {
-                SessionState.IDLE -> "SYSTEM STATUS: READY"
-                SessionState.RUNNING -> "DEEP FOCUS ACTIVE"
-                SessionState.PAUSED -> "SESSION PAUSED"
-                SessionState.FINISHED -> "SESSION COMPLETE"
-                SessionState.ABANDONED -> "SESSION ABANDONED"
+            val statusText = when {
+                state.isPausedByCall -> "CALL DETECTED — PAUSED"
+                state.sessionState == SessionState.IDLE -> "SYSTEM STATUS: READY"
+                state.sessionState == SessionState.RUNNING -> "DEEP FOCUS ACTIVE"
+                state.sessionState == SessionState.PAUSED -> "BIO-BREAK ACTIVE"
+                state.sessionState == SessionState.FINISHED -> "SESSION COMPLETE"
+                state.sessionState == SessionState.ABANDONED -> "SESSION ABANDONED"
+                else -> "SYSTEM STATUS: READY"
             }
 
-            val statusColor = when (state.sessionState) {
-                SessionState.RUNNING -> SoftIndigo
-                SessionState.ABANDONED, SessionState.FINISHED -> abandonColor.copy(1f)
+            val statusColor = when {
+                // Amber color for calls, SoftIndigo for focus, Red/Coral for finish
+                state.isPausedByCall -> Color(0xFFFFA726)
+                state.sessionState == SessionState.RUNNING -> SoftIndigo
+                state.sessionState == SessionState.ABANDONED || state.sessionState == SessionState.FINISHED -> abandonColor.copy(1f)
                 else -> MutedGray.copy(0.6f)
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
