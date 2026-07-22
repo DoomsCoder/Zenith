@@ -188,7 +188,7 @@ class FocusService : Service(), SensorEventListener {
                 if (isCurrentlyDistracted) {
                     isCurrentlyDistracted = false
                     stopPeriodicRoasting()
-                    updateZomatoNotification("ZENITH: FOCUS RESTORED", "Welcome back. Let's finish this.")
+                    updateNotification("ZENITH: FOCUS RESTORED", "Welcome back. Let's finish this.")
                 }
             } else if (!isSystemPackage(latestPkg) && !isCurrentlyDistracted) {
                 isCurrentlyDistracted = true
@@ -208,10 +208,16 @@ class FocusService : Service(), SensorEventListener {
     }
 
     private fun triggerPunishment(type: String) {
+        if (callGraceActive) return
+
         saveDistraction(type)
         triggerExtremeVibration()
-        val (title, msg) = RoastManager.getRoast(isBrutal = false)
-        updateZomatoNotification(title, msg)
+
+        val now = System.currentTimeMillis()
+        if (now - lastRoastTime > 30000) {
+            val (title, msg) = RoastManager.getRoast()
+            updateNotification(title, msg)
+        }
     }
 
     private fun startPeriodicRoasting() {
@@ -224,7 +230,7 @@ class FocusService : Service(), SensorEventListener {
                 count++
                 val isBrutal = count >= 3
                 val (title, msg) = RoastManager.getRoast(isBrutal = isBrutal)
-                updateZomatoNotification(title, msg, isUrgent = isBrutal)
+                updateNotification(title, msg, isUrgent = isBrutal)
             }
         }
     }
@@ -242,7 +248,7 @@ class FocusService : Service(), SensorEventListener {
             callGraceJob?.cancel()
             stopPeriodicRoasting()
             // Freeze Timer in ViewModel
-            sessionScope.launch { SessionEventBus.events.emit(SessionEventBus.SessionEvent.PauseForCall) }
+            sessionScope.launch { SessionEventBus.emit(SessionEventBus.SessionEvent.PauseForCall) }
             Log.d("FocusService", "Call detected: Timer Paused")
         }
     }
@@ -251,18 +257,20 @@ class FocusService : Service(), SensorEventListener {
         callGraceJob?.cancel()
         callGraceJob = sessionScope.launch {
             // Give 5 seconds grace after hanging up to put the phone back down
-            delay(5000)
+            delay(5000L)
             callGraceActive = false
             // Resume Timer in ViewModel
-            SessionEventBus.events.emit(SessionEventBus.SessionEvent.ResumeAfterCall)
-            if (isCurrentlyDistracted) startPeriodicRoasting()
+            lastCheckedTimestamp = System.currentTimeMillis()
+            isCurrentlyDistracted = false
+
+            SessionEventBus.emit(SessionEventBus.SessionEvent.ResumeAfterCall)
             Log.d("FocusService", "Call ended: Timer Resumed")
         }
     }
 
     // --- 5. NOTIFICATIONS & FEEDBACK ---
 
-    private fun updateZomatoNotification(title: String, message: String, isUrgent: Boolean = false) {
+    private fun updateNotification(title: String, message: String, isUrgent: Boolean = false) {
         // ROTATING CHANNEL: Bypasses Android's heads-up suppression
         val roastChannelId = "zenith_roast_channel_${notificationCounter % 3}"
         createRoastChannel(roastChannelId)

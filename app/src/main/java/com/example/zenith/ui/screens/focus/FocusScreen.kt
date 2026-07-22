@@ -1,5 +1,9 @@
 package com.example.zenith.ui.screens.focus
 
+import android.Manifest
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -87,6 +91,16 @@ import kotlin.math.sin
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
+
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (!isGranted) Log.d("Zenith", "Call Shield will not work without permission")
+    }
+
+    LaunchedEffect(Unit) {
+        launcher.launch(Manifest.permission.READ_PHONE_STATE)
+    }
     // State Management
     var showCustomSheet by rememberSaveable { mutableStateOf(false) }
     var customPickerValue by rememberSaveable { mutableIntStateOf(45) }

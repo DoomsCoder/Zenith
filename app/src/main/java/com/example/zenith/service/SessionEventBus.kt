@@ -1,9 +1,23 @@
 package com.example.zenith.service
 
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 object SessionEventBus {
-    val events = MutableSharedFlow<SessionEvent> (extraBufferCapacity = 1)
+    private val _events = MutableSharedFlow<SessionEvent>(
+        replay = 1,
+        extraBufferCapacity = 1
+    )
+    val events = _events.asSharedFlow()
+
+    suspend fun emit(event: SessionEvent) {
+        _events.emit(event)
+    }
+
+    // Prevents the same event from firing twice on screen rotation
+    fun clearLastEvent() {
+        _events.resetReplayCache()
+    }
 
     sealed class SessionEvent {
         object PauseForCall : SessionEvent()

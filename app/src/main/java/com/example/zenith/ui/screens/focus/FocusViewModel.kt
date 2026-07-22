@@ -41,7 +41,7 @@ class FocusViewModel(
                     SessionEventBus.SessionEvent.PauseForCall -> handleCallPause()
                     SessionEventBus.SessionEvent.ResumeAfterCall -> handleCallResume()
                 }
-
+                SessionEventBus.clearLastEvent()
             }
         }
         if (!uiStateMachine.isStateRestored){
@@ -59,12 +59,23 @@ class FocusViewModel(
         focusTimerJob?.cancel()
         pauseTimerJob?.cancel()
 
-        uiStateMachine.update { copy(isPausedByCall = true) }
+        uiStateMachine.update {
+            copy(
+                isPausedByCall = true,
+                stateBeforeCall = sessionState
+            )
+        }
     }
 
     private fun handleCallResume() {
         if (uiState.value.isPausedByCall) {
-            uiStateMachine.update { copy(isPausedByCall = false) }
+            val previousState = uiState.value.stateBeforeCall
+            uiStateMachine.update {
+                copy(
+                    isPausedByCall = false,
+                    stateBeforeCall = null
+                )
+            }
             when (uiState.value.sessionState) {
                 SessionState.RUNNING -> {
                     startFocusTimer()
