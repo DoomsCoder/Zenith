@@ -58,6 +58,7 @@ class FocusService : Service(), SensorEventListener {
     private var lastCheckedTimestamp: Long = System.currentTimeMillis()
     private var lastRoastTime: Long = 0
     private var isCurrentlyDistracted = false
+    private var isManuallyPaused = false
 
     private val sessionScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
@@ -111,6 +112,25 @@ class FocusService : Service(), SensorEventListener {
 
         registerReceiver(screenStartReceiver, IntentFilter(Intent.ACTION_SCREEN_ON))
         registerReceiver(phoneStateReceiver, IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED))
+
+        sessionScope.launch {
+            SessionEventBus.events.collect { event ->
+                when(event) {
+                    SessionEventBus.SessionEvent.UserManualPause -> {
+                        isManuallyPaused = true
+                        stopPeriodicRoasting()
+                        Log.d("FocusService", "User is on break. Monitoring silenced.")
+                    }
+                    SessionEventBus.SessionEvent.UserManualResume -> {
+                        isManuallyPaused = false
+                        lastCheckedTimestamp = System.currentTimeMillis()
+                        Log.d("FocusService", "User resumed focus session.")
+                    }
+
+                    else -> {}
+                }
+            }
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -177,6 +197,11 @@ class FocusService : Service(), SensorEventListener {
         val event = UsageEvents.Event()
         var latestPkg: String? = null
 
+        if (isManuallyPaused || callGraceActive) {
+            lastCheckedTimestamp = System.currentTimeMillis()
+            return
+        }
+
         while (events.hasNextEvent()) {
             events.getNextEvent(event)
             val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) UsageEvents.Event.ACTIVITY_RESUMED else UsageEvents.Event.MOVE_TO_FOREGROUND
@@ -200,6 +225,8 @@ class FocusService : Service(), SensorEventListener {
     }
 
     private fun handlePickupViolation(source: String) {
+
+        if (isManuallyPaused || callGraceActive) return
         val now = System.currentTimeMillis()
         if (now - lastPickupTime > 10000) {
             lastPickupTime = now

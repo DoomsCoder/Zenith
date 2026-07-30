@@ -1,5 +1,6 @@
 package com.example.zenith.service
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 
@@ -15,6 +16,7 @@ object SessionEventBus {
     }
 
     // Prevents the same event from firing twice on screen rotation
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun clearLastEvent() {
         _events.resetReplayCache()
     }
@@ -22,5 +24,9 @@ object SessionEventBus {
     sealed class SessionEvent {
         object PauseForCall : SessionEvent()
         object ResumeAfterCall : SessionEvent()
+
+        object UserManualPause : SessionEvent()
+
+        object UserManualResume : SessionEvent()
     }
 }

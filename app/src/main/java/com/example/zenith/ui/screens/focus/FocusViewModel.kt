@@ -40,6 +40,8 @@ class FocusViewModel(
                 when(event) {
                     SessionEventBus.SessionEvent.PauseForCall -> handleCallPause()
                     SessionEventBus.SessionEvent.ResumeAfterCall -> handleCallResume()
+
+                    else -> {/* Ignore UserManual events intended for the service */}
                 }
                 SessionEventBus.clearLastEvent()
             }
@@ -166,6 +168,10 @@ class FocusViewModel(
         focusTimerJob?.cancel()
         uiStateMachine.update { copy(sessionState = SessionState.PAUSED) }
 
+        viewModelScope.launch {
+            SessionEventBus.emit(SessionEventBus.SessionEvent.UserManualPause)
+        }
+
         pauseTimerJob?.cancel()
         pauseTimerJob = viewModelScope.launch {
             while (uiState.value.remainingPausedSeconds > 0) {
@@ -183,6 +189,10 @@ class FocusViewModel(
                 sessionState = SessionState.RUNNING,
                 remainingPausedSeconds = 300
             )
+        }
+
+        viewModelScope.launch {
+            SessionEventBus.emit(SessionEventBus.SessionEvent.UserManualResume)
         }
         startFocusTimer()
     }
