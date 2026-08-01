@@ -68,13 +68,15 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     contentWindowInsets = WindowInsets(0,0,0,0),
                     topBar = {
-                        ZenithTopAppBar(
-                            onNavigateToSettings = {
-                                if (backStack.last() != Destination.Settings){
-                                    backStack.add(Destination.Settings)
+                        if (backStack.last() != Destination.Settings) {
+                            ZenithTopAppBar(
+                                onNavigateToSettings = {
+                                    if (backStack.last() != Destination.Settings) {
+                                        backStack.add(Destination.Settings)
+                                    }
                                 }
-                            }
-                        )
+                            )
+                        }
                     },
                     bottomBar = {
                         if (backStack.last() != Destination.Settings && backStack.last() != Destination.SessionHistory) {
