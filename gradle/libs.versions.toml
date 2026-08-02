@@ -14,10 +14,12 @@ workRuntimeKtx = "2.10.0"
 ksp = "2.1.0-1.0.29" # Matches Kotlin 2.1.0
 dejavu = "0.3.1"
 navigation3 = "1.1.2"
+datastore = "1.1.2"
 kotlinSerialization = "2.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 compose = { module = "com.patrykandpatrick.vico:compose", version.ref = "vico" }
 compose-m3 = { module = "com.patrykandpatrick.vico:compose-m3", version.ref = "vico" }
 core = { module = "com.patrykandpatrick.vico:core", version.ref = "vico" }
