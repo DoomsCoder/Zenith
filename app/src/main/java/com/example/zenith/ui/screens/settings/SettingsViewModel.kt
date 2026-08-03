@@ -30,4 +30,12 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun setStrictness(level: Int) {
         viewModelScope.launch { repository.updateStrictness(level) }
     }
+
+    fun toggleAutoDnd(enabled: Boolean) {
+        viewModelScope.launch { repository.updateAutoDnd(enabled) }
+    }
+
+    fun setMercyBuffer(buffer: Int) {
+        viewModelScope.launch { repository.updateMercyBuffer(buffer) }
+    }
 }

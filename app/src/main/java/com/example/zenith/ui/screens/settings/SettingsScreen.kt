@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -20,9 +21,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -47,7 +50,8 @@ import com.example.zenith.ui.theme.MutedGray
 
 @Composable
 fun SettingsScreen(
-    onCategoryClick: (String) -> Unit = {}
+    onCategoryClick: (String) -> Unit = {},
+    onBack: () -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
@@ -74,7 +78,8 @@ fun SettingsScreen(
     ) {
         SettingsHeader(
             query = searchQuery,
-            onQueryChange = { searchQuery = it }
+            onQueryChange = { searchQuery = it },
+            onBackClick = onBack
         )
 
         LazyColumn(
@@ -119,22 +124,35 @@ fun SettingsScreen(
 @Composable
 private fun SettingsHeader(
     query: String,
-    onQueryChange: (String) -> Unit
+    onQueryChange: (String) -> Unit,
+    onBackClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp, vertical = 12.dp)
     ) {
-
-        Text(
-            text = "Settings",
-            style = MaterialTheme.typography.headlineMedium.copy(
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = (-0.5).sp
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onBackClick, modifier = Modifier.size(32.dp).offset(x = (-8).dp)) {
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    "Go Back",
+                    tint = Color.White
+                )
+            }
+            Text(
+                text = "Settings",
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = (-0.5).sp
+                )
             )
-        )
+        }
         Spacer(modifier = Modifier.height(20.dp))
 
         // Rounded Search Bar

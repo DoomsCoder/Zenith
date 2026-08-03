@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -36,7 +37,9 @@ import com.example.zenith.ui.components.ZenithTopAppBar
 import com.example.zenith.ui.navigation.Destination
 import com.example.zenith.ui.screens.focus.FocusScreen
 import com.example.zenith.ui.screens.focus.FocusViewModel
+import com.example.zenith.ui.screens.settings.EngineConfigScreen
 import com.example.zenith.ui.screens.settings.SettingsScreen
+import com.example.zenith.ui.screens.settings.SettingsViewModel
 import com.example.zenith.ui.screens.statistics.SessionHistoryScreen
 import com.example.zenith.ui.screens.statistics.StatisticsScreen
 import com.example.zenith.ui.screens.statistics.StatisticsViewModel
@@ -64,11 +67,18 @@ class MainActivity : ComponentActivity() {
                     viewModelStoreOwner = LocalViewModelStoreOwner.current!!
                 )
 
+                val settingsViewModel: SettingsViewModel = viewModel(
+                    viewModelStoreOwner = LocalViewModelStoreOwner.current!!
+                )
+
+                val currentDestination = backStack.last()
+                val showBars = currentDestination.showSystemBars
+
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     contentWindowInsets = WindowInsets(0,0,0,0),
                     topBar = {
-                        if (backStack.last() != Destination.Settings) {
+                        if (showBars) {
                             ZenithTopAppBar(
                                 onNavigateToSettings = {
                                     if (backStack.last() != Destination.Settings) {
@@ -79,7 +89,7 @@ class MainActivity : ComponentActivity() {
                         }
                     },
                     bottomBar = {
-                        if (backStack.last() != Destination.Settings && backStack.last() != Destination.SessionHistory) {
+                        if (showBars) {
                             ZenithBottomBar(
                                 currentDestination = backStack.last(),
                                 onNavigate = { newDestination ->
@@ -98,7 +108,7 @@ class MainActivity : ComponentActivity() {
                         backStack = backStack,
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(top = innerPadding.calculateTopPadding())
+                            .padding(top = if (showBars) innerPadding.calculateTopPadding() else 0.dp)
                     ) { key ->
                         NavEntry(key) {
                             when (key) {
@@ -111,7 +121,20 @@ class MainActivity : ComponentActivity() {
                                         backStack.add(Destination.Focus)
                                     }
                                 )
-                                Destination.Settings -> SettingsScreen()
+                                Destination.Settings -> SettingsScreen(
+                                    onCategoryClick = { categoryId ->
+                                        when(categoryId) {
+                                            "engine" -> backStack.add(Destination.EngineConfig)
+                                        }
+                                    },
+                                    onBack = { backStack.remove(Destination.Settings) }
+                                )
+                                Destination.EngineConfig -> {
+                                    EngineConfigScreen(
+                                        viewModel = settingsViewModel,
+                                        onBack = { backStack.remove(Destination.EngineConfig)}
+                                    )
+                                }
                                 Destination.SessionHistory -> SessionHistoryScreen(
                                     viewModel = statsViewModel,
                                     onBackClick = { backStack.remove(Destination.SessionHistory) }
