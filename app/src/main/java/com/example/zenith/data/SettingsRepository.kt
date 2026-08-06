@@ -28,7 +28,7 @@ class SettingsRepository(private val context: Context) {
 
     val userPreferenceFlow: Flow<UserPreferences> = context.dataStore.data.map { pref ->
         UserPreferences(
-            strictnessLevel = pref[KEY_STRICTNESS] ?: 1, // 0:Low, 1:Standard, 2:Zenith
+            strictnessLevel = pref[KEY_STRICTNESS] ?: 1, // 0: Low, 1: High, 2: Merciless
             isCallShieldEnabled = pref[KEY_CALL_SHIELD] ?: true,
             mercyBuffer = pref[KEY_MERCY_BUFFER] ?: 0,
             isAutoDndEnabled = pref[KEY_AUTO_DND] ?: false,

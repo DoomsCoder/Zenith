@@ -31,6 +31,8 @@ import com.example.zenith.data.DistractionEvent
 import com.example.zenith.data.DistractionEventDao
 import com.example.zenith.data.FocusSession
 import com.example.zenith.data.FocusSessionDao
+import com.example.zenith.data.SettingsRepository
+import com.example.zenith.data.UserPreferences
 import kotlinx.coroutines.*
 import kotlin.math.abs
 import kotlin.math.pow
@@ -44,6 +46,7 @@ class FocusService : Service(), SensorEventListener {
     private lateinit var usageStatsManager: UsageStatsManager
     private lateinit var sensorManager: SensorManager
     private lateinit var vibrator: Vibrator
+    private val settingsRepository by lazy { SettingsRepository(this) }
 
     private val mainChannelID = "focus_service_channel"
     private var currentSessionId: Long = -1
@@ -59,6 +62,17 @@ class FocusService : Service(), SensorEventListener {
     private var lastRoastTime: Long = 0
     private var isCurrentlyDistracted = false
     private var isManuallyPaused = false
+    private var ignoredViolations = 0
+    private var dndWasAppliedByZenith = false
+    private var interruptionFilterBeforeSession = NotificationManager.INTERRUPTION_FILTER_ALL
+
+    @Volatile
+    private var userPreferences = UserPreferences(
+        strictnessLevel = 1, isCallShieldEnabled = true, mercyBuffer = 0,
+        roastIntensity = 1, isAutoDndEnabled = false,
+        notificationThrottlingSeconds = 30, isHapticsEnabled = true,
+        vibrationStrength = 100, showFocusTrends = true
+    )
 
     private val sessionScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
@@ -67,7 +81,7 @@ class FocusService : Service(), SensorEventListener {
     private val screenStartReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == Intent.ACTION_SCREEN_ON && !callGraceActive) {
-                handlePickupViolation("SCREEN_ON")
+                handlePickupViolation()
             }
         }
     }
@@ -77,7 +91,7 @@ class FocusService : Service(), SensorEventListener {
             val state = intent?.getStringExtra(TelephonyManager.EXTRA_STATE)
             when (state) {
                 TelephonyManager.EXTRA_STATE_RINGING, TelephonyManager.EXTRA_STATE_OFFHOOK -> {
-                    activateCallShield()
+                    if (userPreferences.isCallShieldEnabled) activateCallShield()
                 }
                 TelephonyManager.EXTRA_STATE_IDLE -> {
                     deactivateCallShield()
@@ -114,6 +128,17 @@ class FocusService : Service(), SensorEventListener {
         registerReceiver(phoneStateReceiver, IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED))
 
         sessionScope.launch {
+            settingsRepository.userPreferenceFlow.collect { preferences ->
+                userPreferences = preferences
+                if (preferences.isAutoDndEnabled && monitoringJob != null) {
+                    applyDoNotDisturbIfEnabled()
+                } else if (!preferences.isAutoDndEnabled) {
+                    restoreDoNotDisturb()
+                }
+            }
+        }
+
+        sessionScope.launch {
             SessionEventBus.events.collect { event ->
                 when(event) {
                     SessionEventBus.SessionEvent.UserManualPause -> {
@@ -142,6 +167,7 @@ class FocusService : Service(), SensorEventListener {
 
         createMainChannel()
         startForeground(1, buildPersistentNotification(), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+        applyDoNotDisturbIfEnabled()
 
         sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.let {
             sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL)
@@ -169,6 +195,7 @@ class FocusService : Service(), SensorEventListener {
     private fun handleStopCommand(isExplicitFinish: Boolean) {
         monitoringJob?.cancel()
         stopPeriodicRoasting()
+        restoreDoNotDisturb()
         sessionScope.launch {
             if (currentSessionId != -1L) {
                 focusSessionDao.getSessionById(currentSessionId.toInt())?.let {
@@ -186,6 +213,7 @@ class FocusService : Service(), SensorEventListener {
         unregisterReceiver(screenStartReceiver)
         unregisterReceiver(phoneStateReceiver)
         sensorManager.unregisterListener(this)
+        restoreDoNotDisturb()
         sessionScope.cancel()
     }
 
@@ -217,34 +245,42 @@ class FocusService : Service(), SensorEventListener {
                 }
             } else if (!isSystemPackage(latestPkg) && !isCurrentlyDistracted) {
                 isCurrentlyDistracted = true
-                triggerPunishment("APP_SWITCH")
-                startPeriodicRoasting()
+                if (triggerPunishment("APP_SWITCH")) startPeriodicRoasting()
             }
         }
         lastCheckedTimestamp = now
     }
 
-    private fun handlePickupViolation(source: String) {
+    private fun handlePickupViolation() {
 
         if (isManuallyPaused || callGraceActive) return
         val now = System.currentTimeMillis()
-        if (now - lastPickupTime > 10000) {
+        if (now - lastPickupTime > pickupCooldownMs()) {
             lastPickupTime = now
             triggerPunishment("PICKUP")
         }
     }
 
-    private fun triggerPunishment(type: String) {
-        if (callGraceActive) return
+    /** Returns true only when this violation should receive a penalty. */
+    private fun triggerPunishment(type: String): Boolean {
+        if (callGraceActive) return false
+
+        if (ignoredViolations < userPreferences.mercyBuffer) {
+            ignoredViolations++
+            Log.d("FocusService", "Mercy buffer absorbed $type ($ignoredViolations/${userPreferences.mercyBuffer})")
+            return false
+        }
 
         saveDistraction(type)
-        triggerExtremeVibration()
+        if (userPreferences.isHapticsEnabled) triggerExtremeVibration()
 
         val now = System.currentTimeMillis()
-        if (now - lastRoastTime > 30000) {
+        if (now - lastRoastTime > roastIntervalMs()) {
             val (title, msg) = RoastManager.getRoast()
             updateNotification(title, msg)
+            lastRoastTime = now
         }
+        return true
     }
 
     private fun startPeriodicRoasting() {
@@ -252,7 +288,7 @@ class FocusService : Service(), SensorEventListener {
         roastIntervalJob = sessionScope.launch {
             var count = 1
             while (isCurrentlyDistracted) {
-                delay(30000)
+                delay(roastIntervalMs())
                 if (!isCurrentlyDistracted || callGraceActive) break
                 count++
                 val isBrutal = count >= 3
@@ -281,6 +317,7 @@ class FocusService : Service(), SensorEventListener {
     }
 
     private fun deactivateCallShield() {
+        if (!callGraceActive) return
         callGraceJob?.cancel()
         callGraceJob = sessionScope.launch {
             // Give 5 seconds grace after hanging up to put the phone back down
@@ -293,6 +330,39 @@ class FocusService : Service(), SensorEventListener {
             SessionEventBus.emit(SessionEventBus.SessionEvent.ResumeAfterCall)
             Log.d("FocusService", "Call ended: Timer Resumed")
         }
+    }
+
+    private fun pickupCooldownMs(): Long = when (userPreferences.strictnessLevel) {
+        0 -> 30_000L // Low: avoid penalising accidental movement.
+        2 -> 5_000L  // Merciless: detect repeated pickups quickly.
+        else -> 10_000L
+    }
+
+    private fun roastIntervalMs(): Long = when (userPreferences.strictnessLevel) {
+        0 -> 60_000L
+        2 -> 15_000L
+        else -> 30_000L
+    }
+
+    private fun applyDoNotDisturbIfEnabled() {
+        if (!userPreferences.isAutoDndEnabled || dndWasAppliedByZenith) return
+        val notificationManager = getSystemService(NotificationManager::class.java)
+        if (!notificationManager.isNotificationPolicyAccessGranted) {
+            Log.w("FocusService", "DND is enabled in settings but policy access has not been granted.")
+            return
+        }
+        interruptionFilterBeforeSession = notificationManager.currentInterruptionFilter
+        notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
+        dndWasAppliedByZenith = true
+    }
+
+    private fun restoreDoNotDisturb() {
+        if (!dndWasAppliedByZenith) return
+        val notificationManager = getSystemService(NotificationManager::class.java)
+        if (notificationManager.isNotificationPolicyAccessGranted) {
+            notificationManager.setInterruptionFilter(interruptionFilterBeforeSession)
+        }
+        dndWasAppliedByZenith = false
     }
 
     // --- 5. NOTIFICATIONS & FEEDBACK ---
@@ -362,6 +432,6 @@ class FocusService : Service(), SensorEventListener {
     }
 
     private fun isSystemPackage(pkg: String): Boolean = pkg == "com.android.systemui" || pkg.contains("launcher") || pkg == "android"
-    override fun onSensorChanged(event: SensorEvent?) { if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) { if (abs(sqrt(event.values[0].pow(2) + event.values[1].pow(2) + event.values[2].pow(2)) - SensorManager.GRAVITY_EARTH) >= 2.0f && !callGraceActive) handlePickupViolation("ACCELEROMETER") } }
+    override fun onSensorChanged(event: SensorEvent?) { if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) { if (abs(sqrt(event.values[0].pow(2) + event.values[1].pow(2) + event.values[2].pow(2)) - SensorManager.GRAVITY_EARTH) >= 2.0f && !callGraceActive) handlePickupViolation() } }
     override fun onAccuracyChanged(p0: Sensor?, p1: Int) {}
 }

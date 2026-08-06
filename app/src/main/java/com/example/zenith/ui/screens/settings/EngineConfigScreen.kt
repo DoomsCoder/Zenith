@@ -1,5 +1,8 @@
 package com.example.zenith.ui.screens.settings
 
+import android.app.NotificationManager
+import android.content.Intent
+import android.provider.Settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -34,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -48,6 +52,8 @@ fun EngineConfigScreen(
     onBack: () -> Unit
 ) {
     val prefs by viewModel.settingsState.collectAsState()
+    val context = LocalContext.current
+    val notificationManager = context.getSystemService(NotificationManager::class.java)
 
     Scaffold(
         topBar = {
@@ -81,9 +87,15 @@ fun EngineConfigScreen(
 
                 SwitchPreference(
                     title = "Auto Do-Not-Disturb",
-                    subtitle = "Automatically silence all system notifications when a focus session begins. Zenith alerts will still bypass this shield.",
+                    subtitle = "Use Android's Priority-only Do Not Disturb while a focus session is active. Requires Do Not Disturb access.",
                     checked = p.isAutoDndEnabled,
-                    onCheckedChange = { viewModel.toggleAutoDnd(it) }
+                    onCheckedChange = { enabled ->
+                        if (enabled && !notificationManager.isNotificationPolicyAccessGranted) {
+                            context.startActivity(Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS))
+                        } else {
+                            viewModel.toggleAutoDnd(enabled)
+                        }
+                    }
                 )
 
                 SwitchPreference(
