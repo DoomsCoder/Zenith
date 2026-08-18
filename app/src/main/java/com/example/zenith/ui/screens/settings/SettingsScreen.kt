@@ -94,7 +94,7 @@ fun SettingsScreen(
                     category = category,
                     onClick = {
                         focusManager.clearFocus()
-                        if (category.id == "engine") {
+                        if (category.id == "engine" || category.id == "whitelist") {
                             onCategoryClick(category.id)
                         } else {
                             Toast.makeText(context, "Feature in development.", Toast.LENGTH_SHORT).show()

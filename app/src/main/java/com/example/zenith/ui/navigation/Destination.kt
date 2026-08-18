@@ -23,6 +23,11 @@ sealed interface Destination : NavKey {
             get() = false
     }
     @Serializable
+    data object Whitelist: Destination {
+        override val showSystemBars: Boolean
+            get() = false
+    }
+    @Serializable
     data object SessionHistory: Destination {
         override val showSystemBars: Boolean
             get() = false

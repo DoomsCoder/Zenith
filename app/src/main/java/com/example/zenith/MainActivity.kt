@@ -40,6 +40,8 @@ import com.example.zenith.ui.screens.focus.FocusViewModel
 import com.example.zenith.ui.screens.settings.EngineConfigScreen
 import com.example.zenith.ui.screens.settings.SettingsScreen
 import com.example.zenith.ui.screens.settings.SettingsViewModel
+import com.example.zenith.ui.screens.settings.WhitelistManagerScreen
+import com.example.zenith.ui.screens.settings.WhitelistViewModel
 import com.example.zenith.ui.screens.statistics.SessionHistoryScreen
 import com.example.zenith.ui.screens.statistics.StatisticsScreen
 import com.example.zenith.ui.screens.statistics.StatisticsViewModel
@@ -68,6 +70,10 @@ class MainActivity : ComponentActivity() {
                 )
 
                 val settingsViewModel: SettingsViewModel = viewModel(
+                    viewModelStoreOwner = LocalViewModelStoreOwner.current!!
+                )
+
+                val whitelistViewModel: WhitelistViewModel = viewModel(
                     viewModelStoreOwner = LocalViewModelStoreOwner.current!!
                 )
 
@@ -125,6 +131,7 @@ class MainActivity : ComponentActivity() {
                                     onCategoryClick = { categoryId ->
                                         when(categoryId) {
                                             "engine" -> backStack.add(Destination.EngineConfig)
+                                            "whitelist" -> backStack.add(Destination.Whitelist)
                                         }
                                     },
                                     onBack = { backStack.remove(Destination.Settings) }
@@ -133,6 +140,12 @@ class MainActivity : ComponentActivity() {
                                     EngineConfigScreen(
                                         viewModel = settingsViewModel,
                                         onBack = { backStack.remove(Destination.EngineConfig)}
+                                    )
+                                }
+                                Destination.Whitelist -> {
+                                    WhitelistManagerScreen(
+                                        viewModel = whitelistViewModel,
+                                        onBack = { backStack.remove(Destination.Whitelist) }
                                     )
                                 }
                                 Destination.SessionHistory -> SessionHistoryScreen(

@@ -1,16 +1,12 @@
 package com.example.zenith.ui.screens.settings
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.FlashOn
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.Memory
 import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Storage
-import androidx.compose.material.icons.outlined.TrackChanges
 import androidx.compose.ui.graphics.vector.ImageVector
 
 data class SettingsCategory(
@@ -46,28 +42,10 @@ val settingsCategories = listOf(
         icon = Icons.Outlined.FlashOn
     ),
     SettingsCategory(
-        id = "schedule",
-        title = "Focus Schedule",
-        subtitle = "Auto-start · Daily goals · Quiet hours",
-        icon = Icons.Outlined.CalendarToday
-    ),
-    SettingsCategory(
-        id = "appearance",
-        title = "Appearance",
-        subtitle = "Focus trends · Branded themes · Dark mode",
-        icon = Icons.Outlined.Palette
-    ),
-    SettingsCategory(
         id = "data",
         title = "Data & Privacy",
         subtitle = "Export history · Factory reset · Local database",
         icon = Icons.Outlined.Storage
-    ),
-    SettingsCategory(
-        id = "integrations",
-        title = "Integrations",
-        subtitle = "Google Calendar · Obsidian · Productivity sync",
-        icon = Icons.Outlined.Link
     ),
     SettingsCategory(
         id = "about",
