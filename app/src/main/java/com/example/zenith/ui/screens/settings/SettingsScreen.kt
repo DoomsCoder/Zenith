@@ -1,5 +1,6 @@
 package com.example.zenith.ui.screens.settings
 
+import android.widget.Toast
 import androidx.compose.animation.core.copy
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -41,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -55,6 +57,7 @@ fun SettingsScreen(
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
 
     val filteredCategories = remember(searchQuery) {
         if (searchQuery.isBlank()) {
@@ -91,7 +94,11 @@ fun SettingsScreen(
                     category = category,
                     onClick = {
                         focusManager.clearFocus()
-                        onCategoryClick(category.id)
+                        if (category.id == "engine") {
+                            onCategoryClick(category.id)
+                        } else {
+                            Toast.makeText(context, "Feature in development.", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 )
                 HorizontalDivider(

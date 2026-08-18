@@ -160,13 +160,20 @@ class FocusService : Service(), SensorEventListener {
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // ALWAYS call startForeground first to satisfy Android's strict background rules
+        createMainChannel()
+        val notification = buildPersistentNotification()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(1, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+        } else {
+            startForeground(1, notification)
+        }
+
         if (intent?.action == ACTION_STOP) {
             handleStopCommand(intent.getBooleanExtra(EXTRA_IS_FINISHED, false))
             return START_NOT_STICKY
         }
 
-        createMainChannel()
-        startForeground(1, buildPersistentNotification(), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
         applyDoNotDisturbIfEnabled()
 
         sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.let {
@@ -200,6 +207,7 @@ class FocusService : Service(), SensorEventListener {
             if (currentSessionId != -1L) {
                 focusSessionDao.getSessionById(currentSessionId.toInt())?.let {
                     val duration = ((System.currentTimeMillis() - it.timestamp) / 1000).toInt()
+                    // Revert to original: save the actual completion status
                     focusSessionDao.updateSession(it.copy(actualDurationSeconds = duration, isCompleted = isExplicitFinish))
                 }
             }

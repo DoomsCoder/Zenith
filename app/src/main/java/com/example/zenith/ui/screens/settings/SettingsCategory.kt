@@ -28,12 +28,6 @@ val settingsCategories = listOf(
         icon = Icons.Outlined.Memory
     ),
     SettingsCategory(
-        id = "presets",
-        title = "Mission Presets",
-        subtitle = "Pomodoro · Deep work · Custom mission flows",
-        icon = Icons.Outlined.TrackChanges
-    ),
-    SettingsCategory(
         id = "whitelist",
         title = "Whitelist Manager",
         subtitle = "Allowed apps · Productivity exceptions",

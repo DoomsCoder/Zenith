@@ -5,7 +5,6 @@ import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.example.zenith.data.AppDatabase
 import com.example.zenith.service.FocusService
 import com.example.zenith.service.SessionEventBus
 import com.example.zenith.ui.common.UiStateMachine
@@ -13,15 +12,12 @@ import com.example.zenith.ui.common.asUiStateMachine
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class FocusViewModel(
     application: Application,
     savedState: SavedStateHandle
 ) : AndroidViewModel(application) {
-    private val db by lazy { AppDatabase.getDatabase(application) }
-    private val sessionDao by lazy { db.focusSessionDao() }
 
     // State Machine
     private val uiStateMachine: UiStateMachine<FocusViewState> =
@@ -46,11 +42,11 @@ class FocusViewModel(
                 SessionEventBus.clearLastEvent()
             }
         }
-        if (!uiStateMachine.isStateRestored){
-            syncWithDatabase()
-        } else {
+        if (uiStateMachine.isStateRestored) {
             if (uiState.value.sessionState == SessionState.RUNNING) {
-                syncWithDatabase()
+                startFocusTimer()
+            } else if (uiState.value.sessionState == SessionState.PAUSED) {
+                startPauseTimer()
             }
         }
     }
@@ -71,7 +67,6 @@ class FocusViewModel(
 
     private fun handleCallResume() {
         if (uiState.value.isPausedByCall) {
-            val previousState = uiState.value.stateBeforeCall
             uiStateMachine.update {
                 copy(
                     isPausedByCall = false,
@@ -83,31 +78,9 @@ class FocusViewModel(
                     startFocusTimer()
                 }
                 SessionState.PAUSED -> {
-                    pausedSession()
+                    startPauseTimer()
                 }
                 else -> {}
-            }
-        }
-    }
-
-    private fun syncWithDatabase() {
-        viewModelScope.launch {
-            val lastSession = sessionDao.getLatestSession().first() ?: return@launch
-            val now = System.currentTimeMillis()
-            val elapsedSec = ((now - lastSession.timestamp) / 1000).toInt()
-            val plannedSec = lastSession.plannedDurationMinutes * 60
-
-            if (!lastSession.isCompleted && elapsedSec < plannedSec) {
-                uiStateMachine.update {
-                    copy(
-                        sessionState = SessionState.RUNNING,
-                        missionText = lastSession.missionName,
-                        selectedDurationMinutes = lastSession.plannedDurationMinutes,
-                        totalFocusSeconds = plannedSec,
-                        remainingFocusSeconds = plannedSec - elapsedSec
-                    )
-                }
-                startFocusTimer()
             }
         }
     }
@@ -138,7 +111,9 @@ class FocusViewModel(
                 sessionState = SessionState.RUNNING,
                 totalFocusSeconds = totalSeconds,
                 remainingFocusSeconds = totalSeconds,
-                remainingPausedSeconds = 300
+                isBreakAllowanceSet = false,
+                totalBreakBankSeconds = 0,
+                remainingBreakBankSeconds = 0
             )
         }
 
@@ -153,7 +128,6 @@ class FocusViewModel(
     private fun startFocusTimer() {
         focusTimerJob?.cancel()
         focusTimerJob = viewModelScope.launch {
-            // FIXED: Use uiState.value inside loop
             while (uiState.value.remainingFocusSeconds > 0) {
                 delay(1000)
                 uiStateMachine.update {
@@ -164,19 +138,40 @@ class FocusViewModel(
         }
     }
 
+    fun setBreakAllowance(minutes: Int) {
+        val seconds = minutes * 60
+        uiStateMachine.update {
+            copy(
+                isBreakAllowanceSet = true,
+                totalBreakBankSeconds = seconds,
+                remainingBreakBankSeconds = seconds
+            )
+        }
+        if (minutes > 0) {
+            pausedSession()
+        } else {
+            resumeSession()
+        }
+    }
+
     fun pausedSession() {
+        if (uiState.value.isBreakAllowanceSet && uiState.value.remainingBreakBankSeconds <= 0) return
+
         focusTimerJob?.cancel()
         uiStateMachine.update { copy(sessionState = SessionState.PAUSED) }
 
         viewModelScope.launch {
             SessionEventBus.emit(SessionEventBus.SessionEvent.UserManualPause)
         }
+        startPauseTimer()
+    }
 
+    private fun startPauseTimer() {
         pauseTimerJob?.cancel()
         pauseTimerJob = viewModelScope.launch {
-            while (uiState.value.remainingPausedSeconds > 0) {
+            while (uiState.value.remainingBreakBankSeconds > 0) {
                 delay(1000)
-                uiStateMachine.update { copy(remainingPausedSeconds = remainingPausedSeconds - 1) }
+                uiStateMachine.update { copy(remainingBreakBankSeconds = remainingBreakBankSeconds - 1) }
             }
             resumeSession()
         }
@@ -185,10 +180,7 @@ class FocusViewModel(
     fun resumeSession() {
         pauseTimerJob?.cancel()
         uiStateMachine.update {
-            copy(
-                sessionState = SessionState.RUNNING,
-                remainingPausedSeconds = 300
-            )
+            copy(sessionState = SessionState.RUNNING)
         }
 
         viewModelScope.launch {
@@ -229,6 +221,9 @@ class FocusViewModel(
                 selectedDurationMinutes = snapshot.selectedDurationMinutes,
                 remainingFocusSeconds = snapshot.remainingFocusSeconds,
                 totalFocusSeconds = snapshot.totalFocusSeconds,
+                isBreakAllowanceSet = snapshot.isBreakAllowanceSet,
+                totalBreakBankSeconds = snapshot.totalBreakBankSeconds,
+                remainingBreakBankSeconds = snapshot.remainingBreakBankSeconds,
                 sessionState = if (snapshot.sessionState == SessionState.PAUSED)
                     SessionState.PAUSED else SessionState.RUNNING,
                 snapshotBeforeAbandon = null
@@ -243,7 +238,7 @@ class FocusViewModel(
             }
             getApplication<Application>().startForegroundService(intent)
         } else if (uiState.value.sessionState == SessionState.PAUSED) {
-            pausedSession()
+            startPauseTimer()
         }
     }
 
@@ -277,7 +272,14 @@ class FocusViewModel(
     fun toggleFocusSession() {
         when (uiState.value.sessionState) {
             SessionState.IDLE -> startSession()
-            SessionState.RUNNING -> pausedSession()
+            SessionState.RUNNING -> {
+                if (!uiState.value.isBreakAllowanceSet) {
+                    // Trigger Break Allowance Sheet in UI
+                    uiStateMachine.update { copy(sessionState = SessionState.PAUSED) }
+                } else {
+                    pausedSession()
+                }
+            }
             SessionState.PAUSED -> resumeSession()
             SessionState.FINISHED, SessionState.ABANDONED -> resetToDefaults()
         }

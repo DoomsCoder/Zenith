@@ -22,7 +22,9 @@ data class FocusViewState (
     val selectedDurationMinutes: Int = 25,
     val remainingFocusSeconds: Int = 0,
     val totalFocusSeconds: Int = 0,
-    val remainingPausedSeconds: Int = 300,
+    val totalBreakBankSeconds: Int = 300,
+    val remainingBreakBankSeconds: Int = 300,
+    val isBreakAllowanceSet: Boolean = false,
     val isPausedByCall: Boolean = false,
     val stateBeforeCall: SessionState? = null,
     val snapshotBeforeAbandon: FocusViewState? = null
