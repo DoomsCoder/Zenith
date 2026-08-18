@@ -33,6 +33,7 @@ import com.example.zenith.data.FocusSession
 import com.example.zenith.data.FocusSessionDao
 import com.example.zenith.data.SettingsRepository
 import com.example.zenith.data.UserPreferences
+import com.example.zenith.data.WhitelistedAppDao
 import kotlinx.coroutines.*
 import kotlin.math.abs
 import kotlin.math.pow
@@ -43,6 +44,7 @@ class FocusService : Service(), SensorEventListener {
     private lateinit var db : AppDatabase
     private lateinit var focusSessionDao: FocusSessionDao
     private lateinit var distractionEventDao: DistractionEventDao
+    private lateinit var whitelistedAppDao: WhitelistedAppDao
     private lateinit var usageStatsManager: UsageStatsManager
     private lateinit var sensorManager: SensorManager
     private lateinit var vibrator: Vibrator
@@ -114,6 +116,7 @@ class FocusService : Service(), SensorEventListener {
         db = AppDatabase.getDatabase(this)
         focusSessionDao = db.focusSessionDao()
         distractionEventDao = db.distractionEventDao()
+        whitelistedAppDao = db.whitelistedAppDao()
         usageStatsManager = getSystemService(USAGE_STATS_SERVICE) as UsageStatsManager
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
 
@@ -227,7 +230,7 @@ class FocusService : Service(), SensorEventListener {
 
     // --- 3. TELEMETRY & VIOLATIONS ---
 
-    private fun detectAppSwitches() {
+    private suspend fun detectAppSwitches() {
         val now = System.currentTimeMillis()
         val events = usageStatsManager.queryEvents(lastCheckedTimestamp, now)
         val event = UsageEvents.Event()
@@ -251,9 +254,19 @@ class FocusService : Service(), SensorEventListener {
                     stopPeriodicRoasting()
                     updateNotification("ZENITH: FOCUS RESTORED", "Welcome back. Let's finish this.")
                 }
-            } else if (!isSystemPackage(latestPkg) && !isCurrentlyDistracted) {
-                isCurrentlyDistracted = true
-                if (triggerPunishment("APP_SWITCH")) startPeriodicRoasting()
+            } else if (!isSystemPackage(latestPkg)) {
+                // NEW: Check Whitelist before punishing
+                val isWhitelisted = whitelistedAppDao.isAppWhitelisted(latestPkg)
+                
+                if (!isWhitelisted && !isCurrentlyDistracted) {
+                    isCurrentlyDistracted = true
+                    if (triggerPunishment("APP_SWITCH")) startPeriodicRoasting()
+                } else if (isWhitelisted && isCurrentlyDistracted) {
+                    // They switched to a whitelisted app, count it as "restored" but stay alert
+                    isCurrentlyDistracted = false
+                    stopPeriodicRoasting()
+                    updateNotification("ZENITH: PRODUCTIVE EXCEPTION", "Using $latestPkg. Stay focused.")
+                }
             }
         }
         lastCheckedTimestamp = now
