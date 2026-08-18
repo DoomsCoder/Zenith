@@ -8,12 +8,14 @@ import androidx.room.RoomDatabase
 /**
  * The main database class that ties everything together.
  */
-@Database(entities = [FocusSession::class, DistractionEvent::class], version = 2, exportSchema = false)
+@Database(entities = [FocusSession::class, DistractionEvent::class, WhitelistedApp::class], version = 3, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun focusSessionDao() : FocusSessionDao
 
     abstract fun distractionEventDao() : DistractionEventDao
+
+    abstract fun whitelistedAppDao() : WhitelistedAppDao
 
     companion object {
         // @Volatile ensures all threads see the same instance immediately
