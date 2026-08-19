@@ -193,9 +193,12 @@ class FocusService : Service(), SensorEventListener {
                     ))
                 }
                 lastCheckedTimestamp = System.currentTimeMillis()
+                lastRoastTime = 0 // Reset cooldown for new session
+                ignoredViolations = 0 // Reset mercy for new session
                 while (true) {
                     if (!callGraceActive) detectAppSwitches()
-                    delay(3000)
+                    // Increased polling frequency for "Real-time" enforcement
+                    delay(1000)
                 }
             }
         }
@@ -295,9 +298,12 @@ class FocusService : Service(), SensorEventListener {
         saveDistraction(type)
         if (userPreferences.isHapticsEnabled) triggerExtremeVibration()
 
+        // 1. SILENT MODE: Skip notifications if intensity is 'None' (0)
+        if (userPreferences.roastIntensity == 0) return true
+
         val now = System.currentTimeMillis()
         if (now - lastRoastTime > roastIntervalMs()) {
-            val (title, msg) = RoastManager.getRoast()
+            val (title, msg) = RoastManager.getRoast(userPreferences.roastIntensity)
             updateNotification(title, msg)
             lastRoastTime = now
         }
@@ -306,6 +312,10 @@ class FocusService : Service(), SensorEventListener {
 
     private fun startPeriodicRoasting() {
         roastIntervalJob?.cancel()
+        
+        // 2. SILENT MODE: Don't start periodic job if intensity is 'None'
+        if (userPreferences.roastIntensity == 0) return
+
         roastIntervalJob = sessionScope.launch {
             var count = 1
             while (isCurrentlyDistracted) {
@@ -313,7 +323,7 @@ class FocusService : Service(), SensorEventListener {
                 if (!isCurrentlyDistracted || callGraceActive) break
                 count++
                 val isBrutal = count >= 3
-                val (title, msg) = RoastManager.getRoast(isBrutal = isBrutal)
+                val (title, msg) = RoastManager.getRoast(userPreferences.roastIntensity, isUrgent = isBrutal)
                 updateNotification(title, msg, isUrgent = isBrutal)
             }
         }
@@ -359,10 +369,9 @@ class FocusService : Service(), SensorEventListener {
         else -> 10_000L
     }
 
-    private fun roastIntervalMs(): Long = when (userPreferences.strictnessLevel) {
-        0 -> 60_000L
-        2 -> 15_000L
-        else -> 30_000L
+    private fun roastIntervalMs(): Long {
+        // Use the user-defined throttle gap from settings
+        return userPreferences.notificationThrottlingSeconds * 1000L
     }
 
     private fun applyDoNotDisturbIfEnabled() {
