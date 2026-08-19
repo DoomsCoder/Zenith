@@ -80,6 +80,7 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
     var pressingProgress by rememberSaveable { mutableFloatStateOf(0f) }
     var isHolding by rememberSaveable { mutableStateOf(false) }
     val abandonColor = Color(0xFFFFC8AF).copy(0.38f)
+    val penaltyRed = Color(0xFFEF5350)
 
     val completionTimestamp = remember(state.sessionState) {
         if (state.sessionState == SessionState.FINISHED) {
@@ -164,6 +165,7 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
 
             val statusText = when {
                 state.isPausedByCall -> "CALL DETECTED — PAUSED"
+                state.isIntegrityCompromised -> "INTEGRITY COMPROMISED: RECOVERING"
                 state.sessionState == SessionState.IDLE -> "SYSTEM STATUS: READY"
                 state.sessionState == SessionState.RUNNING -> "DEEP FOCUS ACTIVE"
                 state.sessionState == SessionState.PAUSED -> "BIO-BREAK ACTIVE"
@@ -174,6 +176,7 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
 
             val statusColor = when {
                 state.isPausedByCall -> Color(0xFFFFA726)
+                state.isIntegrityCompromised -> penaltyRed
                 state.sessionState == SessionState.RUNNING -> SoftIndigo
                 state.sessionState == SessionState.ABANDONED || state.sessionState == SessionState.FINISHED -> abandonColor.copy(1f)
                 else -> MutedGray.copy(0.6f)
@@ -203,6 +206,7 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
 
             Box(contentAlignment = Alignment.Center, modifier = Modifier.size(240.dp)) {
                 val progress = state.progress
+                val dialColor = if (state.isIntegrityCompromised) penaltyRed else SoftIndigo
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     val center = Offset(size.width / 2, size.height / 2)
                     val radius = size.minDimension / 2
@@ -214,7 +218,7 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                         val tickLength = if (i % 5 == 0) 10.dp.toPx() else 5.dp.toPx()
                         val strokeWidth = if (i % 5 == 0) 2.dp.toPx() else 1.dp.toPx()
                         val isTickNotActive = if (i % 5 == 0) MutedGray.copy(0.3f) else MutedGray.copy(0.1f)
-                        val color = if (isTickActive && progress > 0f) SoftIndigo.copy(0.6f) else isTickNotActive
+                        val color = if (isTickActive && progress > 0f) dialColor.copy(0.6f) else isTickNotActive
                         val startX = center.x + (tickOuterRadius - tickLength) * cos(angleInRadians).toFloat()
                         val startY = center.y + (tickOuterRadius - tickLength) * sin(angleInRadians).toFloat()
                         val endX = center.x + tickOuterRadius * cos(angleInRadians).toFloat()
@@ -223,15 +227,32 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                     }
                     if (progress > 0f) {
                         val arcStrokeWidth = 4.dp.toPx()
-                        drawArc(color = SoftIndigo, startAngle = -90f, sweepAngle = 360f * progress, useCenter = false,
+                        drawArc(color = dialColor, startAngle = -90f, sweepAngle = 360f * progress, useCenter = false,
                             style = Stroke(width = arcStrokeWidth, cap = StrokeCap.Round),
                             size = size.copy(width = size.width - arcStrokeWidth, height = size.height - arcStrokeWidth),
                             topLeft = Offset(arcStrokeWidth / 2, arcStrokeWidth / 2))
                     }
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = displayTime, style = TextStyle(color = Color.White, fontSize = if (state.selectedDurationMinutes >= 60) 40.sp else 48.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace))
+                    Text(text = displayTime, style = TextStyle(color = if (state.isIntegrityCompromised) penaltyRed else Color.White, fontSize = if (state.selectedDurationMinutes >= 60) 40.sp else 48.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace))
                     Text(text = "REMAINING", color = MutedGray.copy(alpha = 0.4f), style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace, letterSpacing = 4.sp, fontSize = 10.sp))
+                }
+            }
+            
+            // Debt Pill
+            AnimatedVisibility(visible = state.isIntegrityCompromised) {
+                Surface(
+                    color = penaltyRed.copy(0.15f),
+                    shape = RoundedCornerShape(50),
+                    border = BorderStroke(1.dp, penaltyRed.copy(0.5f)),
+                    modifier = Modifier.padding(top = 16.dp)
+                ) {
+                    Text(
+                        text = "+${formatTime(state.lastPenaltySeconds.toLong())} DEBT ADDED",
+                        color = penaltyRed,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
+                    )
                 }
             }
 
@@ -330,6 +351,15 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                 }
             }
             Spacer(modifier = Modifier.height(200.dp))
+        }
+        
+        // Red Flash Overlay
+        AnimatedVisibility(
+            visible = state.showPenaltyFlash,
+            enter = fadeIn(tween(100)),
+            exit = fadeOut(tween(500))
+        ) {
+            Box(Modifier.fillMaxSize().background(penaltyRed.copy(0.25f)))
         }
 
         if (state.sessionState == SessionState.FINISHED) {
