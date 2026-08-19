@@ -27,7 +27,12 @@ data class FocusViewState (
     val isBreakAllowanceSet: Boolean = false,
     val isPausedByCall: Boolean = false,
     val stateBeforeCall: SessionState? = null,
-    val snapshotBeforeAbandon: FocusViewState? = null
+    val snapshotBeforeAbandon: FocusViewState? = null,
+    
+    // Penalty tracking
+    val lastPenaltySeconds: Int = 0,
+    val isIntegrityCompromised: Boolean = false,
+    val showPenaltyFlash: Boolean = false
 ) : Parcelable {
     val progress: Float
         get() = if (totalFocusSeconds > 0) {

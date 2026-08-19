@@ -24,9 +24,11 @@ object SessionEventBus {
     sealed class SessionEvent {
         object PauseForCall : SessionEvent()
         object ResumeAfterCall : SessionEvent()
-
         object UserManualPause : SessionEvent()
-
         object UserManualResume : SessionEvent()
+        
+        // NEW: Penalty events for Time Debt system
+        data class PenaltyApplied(val seconds: Int) : SessionEvent()
+        object MissionExecuted : SessionEvent()
     }
 }
