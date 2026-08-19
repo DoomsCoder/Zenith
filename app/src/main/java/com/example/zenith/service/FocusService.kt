@@ -67,6 +67,10 @@ class FocusService : Service(), SensorEventListener {
     private var ignoredViolations = 0
     private var dndWasAppliedByZenith = false
     private var interruptionFilterBeforeSession = NotificationManager.INTERRUPTION_FILTER_ALL
+    
+    // Penalty Tracking
+    private var distractionStartedTimestamp: Long = 0
+    private val EXECUTION_THRESHOLD_MS = 180_000L // 3 Minutes
 
     @Volatile
     private var userPreferences = UserPreferences(
@@ -197,7 +201,16 @@ class FocusService : Service(), SensorEventListener {
                 ignoredViolations = 0 // Reset mercy for new session
                 while (true) {
                     if (!callGraceActive) detectAppSwitches()
-                    // Increased polling frequency for "Real-time" enforcement
+                    
+                    // Check for Execution (3-minute rule)
+                    if (isCurrentlyDistracted && distractionStartedTimestamp != 0L) {
+                        val elapsedDistraction = System.currentTimeMillis() - distractionStartedTimestamp
+                        if (elapsedDistraction >= EXECUTION_THRESHOLD_MS) {
+                            executeMissionFailure()
+                            break
+                        }
+                    }
+                    
                     delay(1000)
                 }
             }
@@ -213,12 +226,21 @@ class FocusService : Service(), SensorEventListener {
             if (currentSessionId != -1L) {
                 focusSessionDao.getSessionById(currentSessionId.toInt())?.let {
                     val duration = ((System.currentTimeMillis() - it.timestamp) / 1000).toInt()
-                    // Revert to original: save the actual completion status
+                    // Set isCompleted based on whether it was a success (isExplicitFinish)
+                    // This allows history to show it correctly as Abandoned (false) or Finished (true)
                     focusSessionDao.updateSession(it.copy(actualDurationSeconds = duration, isCompleted = isExplicitFinish))
                 }
             }
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
+        }
+    }
+
+    private fun executeMissionFailure() {
+        Log.e("FocusService", "MISSION EXECUTED: User AWOL for 3 minutes.")
+        sessionScope.launch {
+            SessionEventBus.emit(SessionEventBus.SessionEvent.MissionExecuted)
+            handleStopCommand(isExplicitFinish = false)
         }
     }
 
@@ -255,6 +277,15 @@ class FocusService : Service(), SensorEventListener {
                 if (isCurrentlyDistracted) {
                     isCurrentlyDistracted = false
                     stopPeriodicRoasting()
+                    
+                    // APPLY TIME DEBT
+                    val distractionSeconds = ((now - distractionStartedTimestamp) / 1000).toInt()
+                    val penaltySeconds = distractionSeconds * 2
+                    if (penaltySeconds > 0) {
+                        SessionEventBus.emit(SessionEventBus.SessionEvent.PenaltyApplied(penaltySeconds))
+                    }
+                    distractionStartedTimestamp = 0
+                    
                     updateNotification("ZENITH: FOCUS RESTORED", "Welcome back. Let's finish this.")
                 }
             } else if (!isSystemPackage(latestPkg)) {
@@ -263,11 +294,21 @@ class FocusService : Service(), SensorEventListener {
                 
                 if (!isWhitelisted && !isCurrentlyDistracted) {
                     isCurrentlyDistracted = true
+                    distractionStartedTimestamp = now
                     if (triggerPunishment("APP_SWITCH")) startPeriodicRoasting()
                 } else if (isWhitelisted && isCurrentlyDistracted) {
                     // They switched to a whitelisted app, count it as "restored" but stay alert
                     isCurrentlyDistracted = false
                     stopPeriodicRoasting()
+                    
+                    // APPLY TIME DEBT (even if returning to a whitelisted app)
+                    val distractionSeconds = ((now - distractionStartedTimestamp) / 1000).toInt()
+                    val penaltySeconds = distractionSeconds * 2
+                    if (penaltySeconds > 0) {
+                        SessionEventBus.emit(SessionEventBus.SessionEvent.PenaltyApplied(penaltySeconds))
+                    }
+                    distractionStartedTimestamp = 0
+                    
                     updateNotification("ZENITH: PRODUCTIVE EXCEPTION", "Using $latestPkg. Stay focused.")
                 }
             }
@@ -304,7 +345,10 @@ class FocusService : Service(), SensorEventListener {
         val now = System.currentTimeMillis()
         if (now - lastRoastTime > roastIntervalMs()) {
             val (title, msg) = RoastManager.getRoast(userPreferences.roastIntensity)
-            updateNotification(title, msg)
+            
+            // Add Debt Warning to Notification
+            val debtSuffix = if (isCurrentlyDistracted) " [DEBT BUILDING: 2x]" else ""
+            updateNotification(title, msg + debtSuffix)
             lastRoastTime = now
         }
         return true
@@ -324,7 +368,10 @@ class FocusService : Service(), SensorEventListener {
                 count++
                 val isBrutal = count >= 3
                 val (title, msg) = RoastManager.getRoast(userPreferences.roastIntensity, isUrgent = isBrutal)
-                updateNotification(title, msg, isUrgent = isBrutal)
+                
+                val elapsedDistraction = (System.currentTimeMillis() - distractionStartedTimestamp) / 1000
+                val currentDebt = elapsedDistraction * 2
+                updateNotification(title, msg + " [DEBT: +${currentDebt}s]", isUrgent = isBrutal)
             }
         }
     }
