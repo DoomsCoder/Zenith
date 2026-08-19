@@ -38,4 +38,12 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun setMercyBuffer(buffer: Int) {
         viewModelScope.launch { repository.updateMercyBuffer(buffer) }
     }
+
+    fun setRoastIntensity(intensity: Int) {
+        viewModelScope.launch { repository.updateRoastIntensity(intensity) }
+    }
+
+    fun setThrottling(seconds: Int) {
+        viewModelScope.launch { repository.updateThrottling(seconds) }
+    }
 }

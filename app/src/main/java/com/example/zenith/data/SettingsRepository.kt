@@ -59,6 +59,14 @@ class SettingsRepository(private val context: Context) {
     suspend fun updateMercyBuffer(buffer: Int) {
         context.dataStore.edit { it[KEY_MERCY_BUFFER] = buffer }
     }
+
+    suspend fun updateRoastIntensity(intensity: Int) {
+        context.dataStore.edit { it[KEY_ROAST_INTENSITY] = intensity }
+    }
+
+    suspend fun updateThrottling(seconds: Int) {
+        context.dataStore.edit { it[KEY_THROTTLING] = seconds }
+    }
 }
 
 data class UserPreferences(
