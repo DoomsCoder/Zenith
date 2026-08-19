@@ -1,29 +1,36 @@
 package com.example.zenith.service
 
 object RoastManager {
-    private val tier1Roasts = listOf( // 0-30 seconds
+    private val mildRoasts = listOf(
+        "Focus, please." to "You're getting distracted. Get back to work.",
+        "Gentle reminder" to "Your mission is still active. Let's finish it.",
+        "Small drift detected" to "Stay on track. You've got this."
+    )
+
+    private val brutalRoasts = listOf(
         "Focused? That's adorable." to "Your attention span is shorter than this text.",
         "The timer is still running..." to "...but your discipline clearly isn't.",
-        "Is that Instagram I see?" to "Scrolling reels won't finish your project."
-    )
-
-    private val tier2Roasts = listOf( // 30-90 seconds
+        "Is that Instagram I see?" to "Scrolling reels won't finish your project.",
         "Still here?" to "Your future self is taking notes. Bad ones.",
-        "Oh, still scrolling?" to "Your deadline doesn't care about your feed.",
-        "Achievement Unlocked: Failure" to "You just earned a focus score penalty. Congrats."
+        "Oh, still scrolling?" to "Your deadline doesn't care about your feed."
     )
 
-    private val brutalRoasts = listOf( // 90+ seconds
+    private val savageRoasts = listOf(
+        "Achievement Unlocked: Failure" to "You just earned a focus score penalty. Congrats.",
         "5 minutes? Wow." to "Your goals are officially on life support.",
         "The distraction won." to "You might as well uninstall me and give up.",
-        "Is this 'Deep Work'?" to "Because it looks like 'Deep Procrastination' to me."
+        "Is this 'Deep Work'?" to "Because it looks like 'Deep Procrastination' to me.",
+        "Pathetic." to "Your willpower is non-existent. Go back to your mission.",
+        "EMOTIONAL DAMAGE" to "Is this how you plan to reach your goals? By scrolling?"
     )
 
-    fun getRoast(isBrutal: Boolean = false, tier: Int = 1): Pair<String, String> {
+    fun getRoast(intensity: Int, isUrgent: Boolean = false): Pair<String, String> {
+        if (intensity == 0) return "" to "" // Silent mode
+        
         return when {
-            isBrutal -> brutalRoasts.random()
-            tier >= 2 -> tier2Roasts.random()
-            else -> tier1Roasts.random()
+            isUrgent || intensity == 3 -> savageRoasts.random()
+            intensity == 2 -> brutalRoasts.random()
+            else -> mildRoasts.random()
         }
     }
 }
