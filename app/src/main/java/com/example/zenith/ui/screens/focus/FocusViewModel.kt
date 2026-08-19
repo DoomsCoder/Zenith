@@ -2,6 +2,7 @@ package com.example.zenith.ui.screens.focus
 
 import android.app.Application
 import android.content.Intent
+import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -29,6 +30,7 @@ class FocusViewModel(
     private var focusTimerJob: Job? = null
     private var pauseTimerJob: Job? = null
     private var abandonResetJob: Job? = null
+    private var surgeJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -36,8 +38,9 @@ class FocusViewModel(
                 when(event) {
                     SessionEventBus.SessionEvent.PauseForCall -> handleCallPause()
                     SessionEventBus.SessionEvent.ResumeAfterCall -> handleCallResume()
-
-                    else -> {/* Ignore UserManual events intended for the service */}
+                    is SessionEventBus.SessionEvent.PenaltyApplied -> applyTimeDebt(event.seconds)
+                    SessionEventBus.SessionEvent.MissionExecuted -> handleMissionExecution()
+                    else -> {}
                 }
                 SessionEventBus.clearLastEvent()
             }
@@ -49,6 +52,41 @@ class FocusViewModel(
                 startPauseTimer()
             }
         }
+    }
+
+    private fun applyTimeDebt(seconds: Int) {
+        surgeJob?.cancel()
+        surgeJob = viewModelScope.launch {
+            uiStateMachine.update { 
+                copy(
+                    lastPenaltySeconds = seconds, 
+                    isIntegrityCompromised = true,
+                    showPenaltyFlash = true
+                ) 
+            }
+            
+            // Limit penalty to 2x original mission
+            val maxAllowedSeconds = uiState.value.selectedDurationMinutes * 60 * 2
+            
+            // Incremental surge animation
+            repeat(seconds) {
+                if (uiState.value.remainingFocusSeconds < maxAllowedSeconds) {
+                    uiStateMachine.update { copy(remainingFocusSeconds = remainingFocusSeconds + 1) }
+                    delay(10) // Rapid tick up
+                }
+            }
+            
+            delay(3000)
+            uiStateMachine.update { copy(isIntegrityCompromised = false, showPenaltyFlash = false) }
+        }
+    }
+
+    private fun handleMissionExecution() {
+        focusTimerJob?.cancel()
+        pauseTimerJob?.cancel()
+        uiStateMachine.update { copy(sessionState = SessionState.IDLE) }
+        resetToDefaults()
+        Toast.makeText(getApplication(), "MISSION FAILED: Integrity compromised for too long.", Toast.LENGTH_LONG).show()
     }
 
     private fun handleCallPause() {
@@ -113,7 +151,8 @@ class FocusViewModel(
                 remainingFocusSeconds = totalSeconds,
                 isBreakAllowanceSet = false,
                 totalBreakBankSeconds = 0,
-                remainingBreakBankSeconds = 0
+                remainingBreakBankSeconds = 0,
+                isIntegrityCompromised = false
             )
         }
 
