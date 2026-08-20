@@ -205,32 +205,75 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
             Spacer(Modifier.height(40.dp))
 
             Box(contentAlignment = Alignment.Center, modifier = Modifier.size(240.dp)) {
-                val progress = state.progress
-                val dialColor = if (state.isIntegrityCompromised) penaltyRed else SoftIndigo
+                val remaining = state.remainingFocusSeconds
+                val total = state.totalFocusSeconds
+                
+                val progress = if (total > 0) ((total - remaining).toFloat() / total).coerceIn(0f, 1f) else 0f
+                val debtProgress = if (total > 0 && remaining > total) ((remaining - total).toFloat() / total).coerceIn(0f, 1f) else 0f
+                
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     val center = Offset(size.width / 2, size.height / 2)
                     val radius = size.minDimension / 2
                     val tickOuterRadius = radius - 14.dp.toPx()
+                    
                     for (i in 0 until 60) {
-                        val angleInRadians = Math.toRadians((i * 6 - 90).toDouble())
+                        val angleInDegrees = (i * 6) - 90
+                        val angleInRadians = Math.toRadians(angleInDegrees.toDouble())
+                        
                         val tickProgress = i / 60f
-                        val isTickActive = tickProgress <= progress
+                        
+                        // Decide tick color
+                        val color = when {
+                            debtProgress > 0f -> {
+                                // Draw debt ticks counter-clockwise from the top
+                                val reverseTickProgress = (60 - i) % 60 / 60f
+                                if (reverseTickProgress <= debtProgress && i != 0) penaltyRed.copy(0.6f) 
+                                else MutedGray.copy(0.1f)
+                            }
+                            progress > 0f -> {
+                                if (tickProgress <= progress) SoftIndigo.copy(0.6f) 
+                                else if (i % 5 == 0) MutedGray.copy(0.3f) else MutedGray.copy(0.1f)
+                            }
+                            else -> if (i % 5 == 0) MutedGray.copy(0.3f) else MutedGray.copy(0.1f)
+                        }
+
                         val tickLength = if (i % 5 == 0) 10.dp.toPx() else 5.dp.toPx()
                         val strokeWidth = if (i % 5 == 0) 2.dp.toPx() else 1.dp.toPx()
-                        val isTickNotActive = if (i % 5 == 0) MutedGray.copy(0.3f) else MutedGray.copy(0.1f)
-                        val color = if (isTickActive && progress > 0f) dialColor.copy(0.6f) else isTickNotActive
+
                         val startX = center.x + (tickOuterRadius - tickLength) * cos(angleInRadians).toFloat()
                         val startY = center.y + (tickOuterRadius - tickLength) * sin(angleInRadians).toFloat()
                         val endX = center.x + tickOuterRadius * cos(angleInRadians).toFloat()
                         val endY = center.y + tickOuterRadius * sin(angleInRadians).toFloat()
+                        
                         drawLine(color = color, start = Offset(startX, startY), end = Offset(endX, endY), strokeWidth = strokeWidth)
                     }
-                    if (progress > 0f) {
-                        val arcStrokeWidth = 4.dp.toPx()
-                        drawArc(color = dialColor, startAngle = -90f, sweepAngle = 360f * progress, useCenter = false,
+
+                    val arcStrokeWidth = 4.dp.toPx()
+                    val arcSize = size.copy(width = size.width - arcStrokeWidth, height = size.height - arcStrokeWidth)
+                    val arcTopLeft = Offset(arcStrokeWidth / 2, arcStrokeWidth / 2)
+
+                    if (debtProgress > 0f) {
+                        // Draw Red Debt Arc Counter-Clockwise
+                        drawArc(
+                            color = penaltyRed,
+                            startAngle = -90f,
+                            sweepAngle = -360f * debtProgress,
+                            useCenter = false,
                             style = Stroke(width = arcStrokeWidth, cap = StrokeCap.Round),
-                            size = size.copy(width = size.width - arcStrokeWidth, height = size.height - arcStrokeWidth),
-                            topLeft = Offset(arcStrokeWidth / 2, arcStrokeWidth / 2))
+                            size = arcSize,
+                            topLeft = arcTopLeft
+                        )
+                    } else if (progress > 0f) {
+                        // Draw Normal Progress Arc Clockwise
+                        drawArc(
+                            color = SoftIndigo,
+                            startAngle = -90f,
+                            sweepAngle = 360f * progress,
+                            useCenter = false,
+                            style = Stroke(width = arcStrokeWidth, cap = StrokeCap.Round),
+                            size = arcSize,
+                            topLeft = arcTopLeft
+                        )
                     }
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
