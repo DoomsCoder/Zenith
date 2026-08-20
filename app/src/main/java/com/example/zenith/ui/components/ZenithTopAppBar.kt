@@ -16,7 +16,6 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Feedback
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -51,11 +50,11 @@ import androidx.compose.ui.Alignment
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ZenithTopAppBar(
-    onNavigateToSettings: () -> Unit
+    onNavigateToSettings: () -> Unit,
+    onNavigateToAbout: () -> Unit
 ) {
     val context = LocalContext.current
     var menuExpanded by remember { mutableStateOf(false) }
-    var showAboutDialog by remember { mutableStateOf(false) }
 
     TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(
@@ -158,43 +157,13 @@ fun ZenithTopAppBar(
                         leadingIcon = { Icon(Icons.Outlined.Info, null, tint = OffWhite.copy(0.9f)) },
                         onClick = {
                             menuExpanded = false
-                            showAboutDialog = true
+                            onNavigateToAbout()
                         }
                     )
                 }
             }
         }
     )
-
-    // ---- About Dialog ---
-    if (showAboutDialog) {
-        AlertDialog(
-            onDismissRequest = { showAboutDialog = false},
-            containerColor = Color(0xFF1A1A1A),
-            title = {
-                Text(
-                    "ZENITH FOCUS ENGINE",
-                    color = SoftIndigo,
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = {
-                Text(
-                    "Version 1.0\n\nA minimalist focus tracker engineered for deep work.\n\nDeveloped by Vedant Kakade.",
-                    color = Color.White.copy(alpha = 0.7f),
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 13.sp
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = { showAboutDialog = false }) {
-                    Text("CLOSE", color = SoftIndigo, fontWeight = FontWeight.Bold)
-                }
-            }
-        )
-    }
 }
 
 @Preview(showBackground = true)
@@ -202,7 +171,8 @@ fun ZenithTopAppBar(
 fun ZenithTopAppBarPreview() {
     ZenithTheme {
         ZenithTopAppBar(
-            onNavigateToSettings = {}
+            onNavigateToSettings = {},
+            onNavigateToAbout = {}
         )
     }
 }

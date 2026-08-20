@@ -40,6 +40,8 @@ import com.example.zenith.ui.screens.focus.FocusViewModel
 import com.example.zenith.ui.screens.settings.EngineConfigScreen
 import com.example.zenith.ui.screens.settings.RoastSettingsScreen
 import com.example.zenith.ui.screens.settings.SensorySettingsScreen
+import com.example.zenith.ui.screens.settings.AboutZenithScreen
+import com.example.zenith.ui.screens.settings.DataPrivacyScreen
 import com.example.zenith.ui.screens.settings.SettingsScreen
 import com.example.zenith.ui.screens.settings.SettingsViewModel
 import com.example.zenith.ui.screens.settings.WhitelistManagerScreen
@@ -92,6 +94,11 @@ class MainActivity : ComponentActivity() {
                                     if (backStack.last() != Destination.Settings) {
                                         backStack.add(Destination.Settings)
                                     }
+                                },
+                                onNavigateToAbout = {
+                                    if (backStack.last() != Destination.AboutZenith) {
+                                        backStack.add(Destination.AboutZenith)
+                                    }
                                 }
                             )
                         }
@@ -136,6 +143,8 @@ class MainActivity : ComponentActivity() {
                                             "whitelist" -> backStack.add(Destination.Whitelist)
                                             "notifications" -> backStack.add(Destination.Roasts)
                                             "sensory" -> backStack.add(Destination.Sensory)
+                                            "data" -> backStack.add(Destination.DataPrivacy)
+                                            "about" -> backStack.add(Destination.AboutZenith)
                                         }
                                     },
                                     onBack = { backStack.remove(Destination.Settings) }
@@ -158,6 +167,12 @@ class MainActivity : ComponentActivity() {
                                         onBack = { backStack.remove(Destination.Sensory) }
                                     )
                                 }
+                                Destination.DataPrivacy -> {
+                                    DataPrivacyScreen(
+                                        viewModel = settingsViewModel,
+                                        onBack = { backStack.remove(Destination.DataPrivacy) }
+                                    )
+                                }
                                 Destination.Whitelist -> {
                                     WhitelistManagerScreen(
                                         viewModel = whitelistViewModel,
@@ -167,6 +182,9 @@ class MainActivity : ComponentActivity() {
                                 Destination.SessionHistory -> SessionHistoryScreen(
                                     viewModel = statsViewModel,
                                     onBackClick = { backStack.remove(Destination.SessionHistory) }
+                                )
+                                Destination.AboutZenith -> AboutZenithScreen(
+                                    onBack = { backStack.remove(Destination.AboutZenith) }
                                 )
                             }
                         }

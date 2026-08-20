@@ -20,4 +20,7 @@ interface WhitelistedAppDao {
 
     @Query("SELECT EXISTS(SELECT 1 FROM whitelisted_apps WHERE packageName = :packageName)")
     suspend fun isAppWhitelisted(packageName: String): Boolean
+
+    @Query("DELETE FROM whitelisted_apps")
+    suspend fun deleteAll()
 }
