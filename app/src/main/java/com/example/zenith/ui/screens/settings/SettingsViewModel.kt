@@ -46,4 +46,12 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun setThrottling(seconds: Int) {
         viewModelScope.launch { repository.updateThrottling(seconds) }
     }
+
+    fun setVibrationStrength(strength: Int) {
+        viewModelScope.launch { repository.updateVibrationStrength(strength) }
+    }
+
+    fun setVibrationPattern(pattern: Int) {
+        viewModelScope.launch { repository.updateVibrationPattern(pattern) }
+    }
 }

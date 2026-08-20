@@ -22,6 +22,7 @@ class SettingsRepository(private val context: Context) {
     private val KEY_THROTTLING = intPreferencesKey("notification_throttling")
     private val KEY_HAPTICS = booleanPreferencesKey("haptics_enabled")
     private val KEY_VIBRATION_STRENGTH = intPreferencesKey("vibration_strength")
+    private val KEY_VIBRATION_PATTERN = intPreferencesKey("vibration_pattern")
 
     private val KEY_SHOW_TRENDS = booleanPreferencesKey("show_focus_trends")
     private val KEY_AUTO_DND = booleanPreferencesKey("auto_dnd_enabled")
@@ -36,6 +37,7 @@ class SettingsRepository(private val context: Context) {
             notificationThrottlingSeconds = pref[KEY_THROTTLING] ?: 30,
             isHapticsEnabled = pref[KEY_HAPTICS] ?: true,
             vibrationStrength = pref[KEY_VIBRATION_STRENGTH] ?: 100,
+            vibrationPattern = pref[KEY_VIBRATION_PATTERN] ?: 0,
             showFocusTrends = pref[KEY_SHOW_TRENDS] ?: true
         )
     }
@@ -67,6 +69,14 @@ class SettingsRepository(private val context: Context) {
     suspend fun updateThrottling(seconds: Int) {
         context.dataStore.edit { it[KEY_THROTTLING] = seconds }
     }
+
+    suspend fun updateVibrationStrength(strength: Int) {
+        context.dataStore.edit { it[KEY_VIBRATION_STRENGTH] = strength }
+    }
+
+    suspend fun updateVibrationPattern(pattern: Int) {
+        context.dataStore.edit { it[KEY_VIBRATION_PATTERN] = pattern }
+    }
 }
 
 data class UserPreferences(
@@ -78,5 +88,6 @@ data class UserPreferences(
     val notificationThrottlingSeconds: Int,
     val isHapticsEnabled: Boolean,
     val vibrationStrength: Int,
+    val vibrationPattern: Int,
     val showFocusTrends: Boolean
 )

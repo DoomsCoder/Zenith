@@ -39,6 +39,7 @@ import com.example.zenith.ui.screens.focus.FocusScreen
 import com.example.zenith.ui.screens.focus.FocusViewModel
 import com.example.zenith.ui.screens.settings.EngineConfigScreen
 import com.example.zenith.ui.screens.settings.RoastSettingsScreen
+import com.example.zenith.ui.screens.settings.SensorySettingsScreen
 import com.example.zenith.ui.screens.settings.SettingsScreen
 import com.example.zenith.ui.screens.settings.SettingsViewModel
 import com.example.zenith.ui.screens.settings.WhitelistManagerScreen
@@ -134,6 +135,7 @@ class MainActivity : ComponentActivity() {
                                             "engine" -> backStack.add(Destination.EngineConfig)
                                             "whitelist" -> backStack.add(Destination.Whitelist)
                                             "notifications" -> backStack.add(Destination.Roasts)
+                                            "sensory" -> backStack.add(Destination.Sensory)
                                         }
                                     },
                                     onBack = { backStack.remove(Destination.Settings) }
@@ -148,6 +150,12 @@ class MainActivity : ComponentActivity() {
                                     RoastSettingsScreen(
                                         viewModel = settingsViewModel,
                                         onBack = { backStack.remove(Destination.Roasts) }
+                                    )
+                                }
+                                Destination.Sensory -> {
+                                    SensorySettingsScreen(
+                                        viewModel = settingsViewModel,
+                                        onBack = { backStack.remove(Destination.Sensory) }
                                     )
                                 }
                                 Destination.Whitelist -> {

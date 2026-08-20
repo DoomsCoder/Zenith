@@ -34,6 +34,7 @@ import com.example.zenith.data.FocusSessionDao
 import com.example.zenith.data.SettingsRepository
 import com.example.zenith.data.UserPreferences
 import com.example.zenith.data.WhitelistedAppDao
+import com.example.zenith.service.VibrationManager
 import kotlinx.coroutines.*
 import kotlin.math.abs
 import kotlin.math.pow
@@ -77,7 +78,7 @@ class FocusService : Service(), SensorEventListener {
         strictnessLevel = 1, isCallShieldEnabled = true, mercyBuffer = 0,
         roastIntensity = 1, isAutoDndEnabled = false,
         notificationThrottlingSeconds = 30, isHapticsEnabled = true,
-        vibrationStrength = 100, showFocusTrends = true
+        vibrationStrength = 100, vibrationPattern = 0, showFocusTrends = true
     )
 
     private val sessionScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -278,7 +279,8 @@ class FocusService : Service(), SensorEventListener {
                     isCurrentlyDistracted = false
                     stopPeriodicRoasting()
                     
-                    // APPLY TIME DEBT
+                    // RESUME PROGRESS & APPLY DEBT
+                    SessionEventBus.emit(SessionEventBus.SessionEvent.ResumeProgress)
                     val distractionSeconds = ((now - distractionStartedTimestamp) / 1000).toInt()
                     val penaltySeconds = distractionSeconds * 2
                     if (penaltySeconds > 0) {
@@ -295,13 +297,18 @@ class FocusService : Service(), SensorEventListener {
                 if (!isWhitelisted && !isCurrentlyDistracted) {
                     isCurrentlyDistracted = true
                     distractionStartedTimestamp = now
+                    
+                    // FREEZE PROGRESS
+                    SessionEventBus.emit(SessionEventBus.SessionEvent.PauseProgress)
+                    
                     if (triggerPunishment("APP_SWITCH")) startPeriodicRoasting()
                 } else if (isWhitelisted && isCurrentlyDistracted) {
-                    // They switched to a whitelisted app, count it as "restored" but stay alert
+                    // They switched from Forbidden -> Whitelisted app
                     isCurrentlyDistracted = false
                     stopPeriodicRoasting()
                     
-                    // APPLY TIME DEBT (even if returning to a whitelisted app)
+                    // RESUME PROGRESS & APPLY DEBT (treat Whitelist as safe zone)
+                    SessionEventBus.emit(SessionEventBus.SessionEvent.ResumeProgress)
                     val distractionSeconds = ((now - distractionStartedTimestamp) / 1000).toInt()
                     val penaltySeconds = distractionSeconds * 2
                     if (penaltySeconds > 0) {
@@ -309,7 +316,7 @@ class FocusService : Service(), SensorEventListener {
                     }
                     distractionStartedTimestamp = 0
                     
-                    updateNotification("ZENITH: PRODUCTIVE EXCEPTION", "Using $latestPkg. Stay focused.")
+                    updateNotification("ZENITH: SAFE ZONE", "In whitelisted module. Progress resumed.")
                 }
             }
         }
@@ -344,7 +351,7 @@ class FocusService : Service(), SensorEventListener {
 
         val now = System.currentTimeMillis()
         if (now - lastRoastTime > roastIntervalMs()) {
-            val (title, msg) = RoastManager.getRoast(userPreferences.roastIntensity)
+            val (title, msg) = RoastManager.getRoast(userPreferences.roastIntensity, type)
             
             // Add Debt Warning to Notification
             val debtSuffix = if (isCurrentlyDistracted) " [DEBT BUILDING: 2x]" else ""
@@ -367,7 +374,7 @@ class FocusService : Service(), SensorEventListener {
                 if (!isCurrentlyDistracted || callGraceActive) break
                 count++
                 val isBrutal = count >= 3
-                val (title, msg) = RoastManager.getRoast(userPreferences.roastIntensity, isUrgent = isBrutal)
+                val (title, msg) = RoastManager.getRoast(userPreferences.roastIntensity, "APP_SWITCH", isUrgent = isBrutal)
                 
                 val elapsedDistraction = (System.currentTimeMillis() - distractionStartedTimestamp) / 1000
                 val currentDebt = elapsedDistraction * 2
@@ -474,9 +481,17 @@ class FocusService : Service(), SensorEventListener {
     }
 
     private fun triggerExtremeVibration() {
-        val timings = longArrayOf(0, 300, 100, 300, 100, 600)
-        val amplitudes = intArrayOf(0, 255, 0, 255, 0, 255)
-        vibrator.vibrate(VibrationEffect.createWaveform(timings, amplitudes, -1))
+        val pattern = VibrationManager.getPattern(userPreferences.vibrationPattern)
+        val strength = userPreferences.vibrationStrength
+        
+        // Convert 0-100% to 0-255 amplitude
+        val amplitude = (strength * 2.55f).toInt().coerceIn(1, 255)
+        
+        val amplitudes = IntArray(pattern.size) { i ->
+            if (i % 2 == 0) 0 else amplitude
+        }
+        
+        vibrator.vibrate(VibrationEffect.createWaveform(pattern, amplitudes, -1))
     }
 
     private fun createMainChannel() {

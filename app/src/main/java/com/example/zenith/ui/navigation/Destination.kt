@@ -33,6 +33,11 @@ sealed interface Destination : NavKey {
             get() = false
     }
     @Serializable
+    data object Sensory: Destination {
+        override val showSystemBars: Boolean
+            get() = false
+    }
+    @Serializable
     data object SessionHistory: Destination {
         override val showSystemBars: Boolean
             get() = false
