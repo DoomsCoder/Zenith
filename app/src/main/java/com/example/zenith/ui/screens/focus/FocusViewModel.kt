@@ -38,6 +38,8 @@ class FocusViewModel(
                 when(event) {
                     SessionEventBus.SessionEvent.PauseForCall -> handleCallPause()
                     SessionEventBus.SessionEvent.ResumeAfterCall -> handleCallResume()
+                    SessionEventBus.SessionEvent.PauseProgress -> uiStateMachine.update { copy(isProgressFrozen = true) }
+                    SessionEventBus.SessionEvent.ResumeProgress -> uiStateMachine.update { copy(isProgressFrozen = false) }
                     is SessionEventBus.SessionEvent.PenaltyApplied -> applyTimeDebt(event.seconds)
                     SessionEventBus.SessionEvent.MissionExecuted -> handleMissionExecution()
                     else -> {}
@@ -169,8 +171,10 @@ class FocusViewModel(
         focusTimerJob = viewModelScope.launch {
             while (uiState.value.remainingFocusSeconds > 0) {
                 delay(1000)
-                uiStateMachine.update {
-                    copy(remainingFocusSeconds = remainingFocusSeconds - 1)
+                if (!uiState.value.isProgressFrozen && !uiState.value.isPausedByCall) {
+                    uiStateMachine.update {
+                        copy(remainingFocusSeconds = remainingFocusSeconds - 1)
+                    }
                 }
             }
             finishSession()

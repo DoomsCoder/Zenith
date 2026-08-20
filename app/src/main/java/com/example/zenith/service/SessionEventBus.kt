@@ -30,5 +30,9 @@ object SessionEventBus {
         // NEW: Penalty events for Time Debt system
         data class PenaltyApplied(val seconds: Int) : SessionEvent()
         object MissionExecuted : SessionEvent()
+        
+        // Progress Controls
+        object PauseProgress : SessionEvent()
+        object ResumeProgress : SessionEvent()
     }
 }

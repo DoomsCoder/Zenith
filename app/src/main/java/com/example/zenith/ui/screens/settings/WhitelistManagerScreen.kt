@@ -129,6 +129,14 @@ fun WhitelistManagerScreen(
                 .padding(innerPadding)
                 .padding(horizontal = 24.dp)
         ) {
+            Text(
+                "Whitelisted modules are safe zones. Using them will not freeze your timer or trigger penalties.",
+                color = MutedGray,
+                fontSize = 12.sp,
+                lineHeight = 16.sp,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
             // Search Bar
             TextField(
                 value = searchQuery,
