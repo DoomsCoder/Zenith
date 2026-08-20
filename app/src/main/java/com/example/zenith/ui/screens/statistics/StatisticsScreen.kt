@@ -44,11 +44,10 @@ fun StatisticsScreen(
     var chartSelectedIndex by remember { mutableStateOf<Int?>(null) }
     val sheetState = rememberModalBottomSheetState()
 
-    // Using Box to provide the background color for the whole screen
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF121212)) // DeepSlate Background
+            .background(Color(0xFF121212))
     ) {
         if(uiState.isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -67,10 +66,9 @@ fun StatisticsScreen(
                     start = 24.dp,
                     end = 24.dp,
                     top = 24.dp,
-                    bottom = 100.dp // Extra bottom padding for the bottom nav bar
+                    bottom = 100.dp
                 )
             ) {
-                // DATE HEADER
                 item {
                     DynamicDateHeader()
                 }
@@ -92,7 +90,6 @@ fun StatisticsScreen(
                     HorizontalDivider(color = Color.White.copy(0.05f))
                     Spacer(Modifier.height(32.dp))
                 }
-                // MISSION LOG SECTION
                 item {
                     TodayMissionLogSection(
                         sessions = uiState.todaySessions,
@@ -146,7 +143,7 @@ fun StatisticsScreen(
 @Composable
 private fun DynamicDateHeader() {
     val today = LocalDate.now()
-    val formattedDate = today.format(DateTimeFormatter.ofPattern("MMMM dd yyyy"))
+    val formattedDate = today.format(DateTimeFormatter.ofPattern("MMMM dd, yyyy"))
 
     Column {
         Row(
@@ -155,19 +152,16 @@ private fun DynamicDateHeader() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "TODAY",
-                style = MaterialTheme.typography.labelLarge.copy(
-                    color = MutedGray,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp,
-                    fontFamily = FontFamily.Monospace
+                text = "Today",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold
                 )
             )
             Text(
-                text = formattedDate, // Uses real system date
-                style = MaterialTheme.typography.labelMedium.copy(
-                    color = MutedGray.copy(alpha = 0.5f),
-                    fontFamily = FontFamily.Monospace
+                text = formattedDate,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    color = MutedGray
                 )
             )
         }

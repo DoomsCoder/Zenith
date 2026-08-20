@@ -1,37 +1,17 @@
 package com.example.zenith.ui.screens.settings
 
 import android.widget.Toast
-import androidx.compose.animation.core.copy
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,7 +19,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
@@ -47,8 +26,8 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.room.util.query
 import com.example.zenith.ui.theme.MutedGray
+import com.example.zenith.ui.theme.SoftIndigo
 
 @Composable
 fun SettingsScreen(
@@ -64,8 +43,8 @@ fun SettingsScreen(
             settingsCategories
         } else {
             settingsCategories.filter {
-                it.title.contains(searchQuery,ignoreCase = true) ||
-                it.subtitle.contains(searchQuery,ignoreCase = true)
+                it.title.contains(searchQuery, ignoreCase = true) ||
+                it.subtitle.contains(searchQuery, ignoreCase = true)
             }
         }
     }
@@ -94,7 +73,7 @@ fun SettingsScreen(
                     category = category,
                     onClick = {
                         focusManager.clearFocus()
-                        if (category.id == "engine" || category.id == "whitelist" || category.id == "notifications" || category.id == "sensory") {
+                        if (category.id == "engine" || category.id == "whitelist" || category.id == "notifications" || category.id == "sensory" || category.id == "data" || category.id == "about") {
                             onCategoryClick(category.id)
                         } else {
                             Toast.makeText(context, "Feature in development.", Toast.LENGTH_SHORT).show()
@@ -137,11 +116,10 @@ private fun SettingsHeader(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 12.dp)
+            .padding(horizontal = 20.dp, vertical = 12.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBackClick, modifier = Modifier.size(32.dp).offset(x = (-8).dp)) {
@@ -155,14 +133,12 @@ private fun SettingsHeader(
                 text = "Settings",
                 style = MaterialTheme.typography.headlineMedium.copy(
                     color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = (-0.5).sp
+                    fontWeight = FontWeight.Bold
                 )
             )
         }
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Rounded Search Bar
         TextField(
             value = query,
             onValueChange = onQueryChange,
@@ -170,7 +146,7 @@ private fun SettingsHeader(
                 .fillMaxWidth()
                 .height(52.dp),
             placeholder = {
-                Text("Search settings...", color = MutedGray.copy(alpha = 0.5f), fontSize = 15.sp)
+                Text("Search settings...", color = MutedGray.copy(alpha = 0.5f), style = MaterialTheme.typography.bodyLarge)
             },
             leadingIcon = {
                 Icon(Icons.Outlined.Search, null, tint = MutedGray, modifier = Modifier.size(20.dp))
@@ -178,8 +154,7 @@ private fun SettingsHeader(
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color(0xFF111111),
                 unfocusedContainerColor = Color(0xFF111111),
-                disabledContainerColor = Color(0xFF111111),
-                cursorColor = Color(0xFF6366F1), // Soft Indigo cursor
+                cursorColor = SoftIndigo,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
                 focusedTextColor = Color.White,
@@ -187,7 +162,7 @@ private fun SettingsHeader(
             ),
             shape = RoundedCornerShape(12.dp),
             singleLine = true,
-            textStyle = LocalTextStyle.current.copy(color = Color.White, fontSize = 15.sp)
+            textStyle = MaterialTheme.typography.bodyLarge.copy(color = Color.White)
         )
     }
 }
@@ -201,7 +176,7 @@ private fun SettingsRow(
         modifier = Modifier
             .fillMaxWidth()
             .clickable{ onClick() }
-            .padding(horizontal = 24.dp, vertical = 18.dp),
+            .padding(horizontal = 20.dp, vertical = 18.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
@@ -217,19 +192,13 @@ private fun SettingsRow(
             Text(
                 text = category.title,
                 color = Color.White,
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 16.sp
-                )
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold)
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = category.subtitle,
                 color = MutedGray,
-                style = MaterialTheme.typography.bodySmall.copy(
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp
-                )
+                style = MaterialTheme.typography.bodySmall
             )
         }
     }

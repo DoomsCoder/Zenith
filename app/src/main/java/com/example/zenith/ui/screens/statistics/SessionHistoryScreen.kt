@@ -37,16 +37,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material.icons.rounded.Warning
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -67,6 +59,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.example.zenith.ui.theme.SoftIndigo
 
 @Composable
@@ -75,20 +68,19 @@ fun SessionHistoryScreen(
     onBackClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
     val haptic = LocalHapticFeedback.current
 
     var selectedIds by remember { mutableStateOf(setOf<String>()) }
     val isSelectionMode by remember { derivedStateOf { selectedIds.isNotEmpty() } }
     var selectedFilter by rememberSaveable { mutableStateOf("All") }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    
     val filteredSessions = remember(selectedFilter, uiState.historySessions){
         val list = when(selectedFilter) {
             "Completed" -> uiState.historySessions.filter { it.isCompleted }
             "Abandoned" -> uiState.historySessions.filter { !it.isCompleted }
             else -> uiState.historySessions
         }
-
         list.reversed()
     }
 
@@ -99,44 +91,33 @@ fun SessionHistoryScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0A0A0A)) // Pure Dark
+            .background(Color(0xFF0A0A0A))
     ) {
-        // Top Navigation
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 24.dp, start = 16.dp, end = 24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Surface (
-                onClick ={ if (isSelectionMode) selectedIds = emptySet() else onBackClick() },
-                shape = RoundedCornerShape(12.dp),
-                color = Color.White.copy(alpha = 0.03f),
-                border = BorderStroke(1.dp,Color.White.copy(0.08f))
-            ) {
-                Box(modifier = Modifier.size(35.dp), contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                        contentDescription = "Back",
-                        tint = Color.White.copy(0.5f)
-                    )
-                }
+            IconButton(onClick = { if (isSelectionMode) selectedIds = emptySet() else onBackClick() }) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                    contentDescription = "Back",
+                    tint = Color.White
+                )
             }
             Spacer(Modifier.width(8.dp))
             Text(
-                text = "SESSION HISTORY",
-                style = MaterialTheme.typography.labelLarge.copy(
-                    fontFamily = FontFamily.Monospace,
+                text = "Session history",
+                style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 2.sp,
-                    color = Color.White.copy(0.6f)
+                    color = Color.White
                 )
             )
         }
 
         Spacer(Modifier.height(32.dp))
 
-        // Filters Row
         Box(modifier = Modifier.padding(horizontal = 24.dp)) {
             AnimatedContent (
                 targetState = isSelectionMode,
@@ -152,16 +133,15 @@ fun SessionHistoryScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-
                             Surface(
                                 modifier = Modifier.height(36.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                color = SoftIndigo.copy(0.2f),
-                                border = BorderStroke(1.dp, SoftIndigo.copy(0.5f))
+                                shape = RoundedCornerShape(100.dp),
+                                color = SoftIndigo.copy(0.12f),
+                                border = BorderStroke(1.dp, SoftIndigo.copy(0.4f))
                             ) {
                                 Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 16.dp)) {
                                     Text(
-                                        text = "${selectedIds.size} SELECTED",
+                                        text = "${selectedIds.size} selected",
                                         style = MaterialTheme.typography.labelSmall.copy(
                                             color = SoftIndigo, fontWeight = FontWeight.Bold
                                         )
@@ -170,46 +150,34 @@ fun SessionHistoryScreen(
                             }
 
                             val isAllSelected = selectedIds.size == filteredSessions.size
-                            Surface(
+                            TextButton(
                                 onClick = {
                                     selectedIds = if (isAllSelected) emptySet() else filteredSessions.map { it.id }.toSet()
                                 },
-                                modifier = Modifier.height(36.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                color = Color.White.copy(0.05f),
-                                border = BorderStroke(1.dp, Color.White.copy(0.1f))
+                                modifier = Modifier.height(36.dp)
                             ) {
-                                Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 16.dp)) {
-                                    Text(
-                                        text = if (isAllSelected) "DESELECT ALL" else "SELECT ALL",
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            color = Color.White.copy(0.7f), fontWeight = FontWeight.Medium
-                                        )
-                                    )
-                                }
+                                Text(
+                                    text = if (isAllSelected) "Deselect all" else "Select all",
+                                    style = MaterialTheme.typography.labelSmall.copy(color = Color.White.copy(0.7f))
+                                )
                             }
                         }
 
                         IconButton(
                             onClick = { showDeleteDialog = true},
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(Color.White.copy(0.03f))
-                                .border(1.dp, Color(0xFFEF5350).copy(0.08f), RoundedCornerShape(12.dp))
+                            modifier = Modifier.size(36.dp)
                         ) {
                             Icon(
                                 Icons.Rounded.Delete,
                                 null,
                                 tint = Color(0xFFEF5350),
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(22.dp)
                             )
                         }
                     }
                 } else {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -222,29 +190,26 @@ fun SessionHistoryScreen(
                                     label = { Text(label, style = MaterialTheme.typography.labelSmall)},
                                     colors = FilterChipDefaults.filterChipColors(
                                         containerColor = Color.Transparent,
-                                        selectedContainerColor = SoftIndigo.copy(0.1f),
+                                        selectedContainerColor = SoftIndigo.copy(0.12f),
                                         labelColor = Color.Gray,
                                         selectedLabelColor = SoftIndigo
                                     ),
                                     border = FilterChipDefaults.filterChipBorder(
                                         enabled = true,
                                         selected = isSelected,
-                                        borderColor = Color.DarkGray,
+                                        borderColor = Color.White.copy(0.1f),
                                         selectedBorderColor = SoftIndigo,
                                         borderWidth = 1.dp,
                                         selectedBorderWidth = 1.dp
                                     ),
-                                    shape = RoundedCornerShape(16.dp)
+                                    shape = RoundedCornerShape(100.dp)
                                 )
                             }
                         }
 
                         Text(
                             text = "${filteredSessions.size} sessions",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontFamily = FontFamily.Monospace,
-                                color = Color.DarkGray
-                            )
+                            style = MaterialTheme.typography.labelSmall.copy(color = Color.DarkGray)
                         )
                     }
                 }
@@ -252,25 +217,22 @@ fun SessionHistoryScreen(
         }
 
         Text(
-            text = "HOLD A CARD TO SELECT · TAP TO EXPAND",
+            text = "Hold to select · Tap to expand",
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 20.dp, bottom = 12.dp),
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.labelSmall.copy(
-                fontFamily = FontFamily.Monospace,
-                fontSize = 10.sp,
-                color = Color.White.copy(0.15f),
-                letterSpacing = 1.sp
+                fontSize = 11.sp,
+                color = Color.White.copy(0.25f)
             )
         )
 
-        HorizontalDivider(thickness = 1.dp, color = Color.White.copy(0.05f))
+        HorizontalDivider(thickness = 0.5.dp, color = Color.White.copy(0.07f))
         Spacer(Modifier.height(14.dp))
 
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(start = 24.dp, top = 8.dp, end = 24.dp, bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -289,26 +251,77 @@ fun SessionHistoryScreen(
     }
 
     if (showDeleteDialog) {
-        AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
-            containerColor = Color(0xFF1A1A1A),
-            title = { Text("Delete Sessions", color = Color.White, fontFamily = FontFamily.Monospace) },
-            text = { Text("Are you sure you want to delete ${selectedIds.size} session(s)? This action is irreversible.", color = Color.Gray) },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.deleteSessions(selectedIds.map { it.toInt() })
-                    selectedIds = emptySet()
-                    showDeleteDialog = false
-                }) {
-                    Text("DELETE", color = Color(0xFFEF5350), fontWeight = FontWeight.Bold)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("CANCEL", color = Color.Gray)
+        Dialog(onDismissRequest = { showDeleteDialog = false }) {
+            Surface(
+                color = Color(0xFF111111),
+                shape = RoundedCornerShape(28.dp),
+                border = BorderStroke(1.dp, Color.White.copy(0.05f)),
+                modifier = Modifier.fillMaxWidth().padding(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        Icons.Rounded.Delete,
+                        null,
+                        tint = Color(0xFFEF5350),
+                        modifier = Modifier.size(32.dp)
+                    )
+
+                    Spacer(Modifier.height(16.dp))
+
+                    Text(
+                        "Delete sessions",
+                        color = Color.White,
+                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
+                    )
+
+                    Spacer(Modifier.height(12.dp))
+
+                    Text(
+                        text = "Are you sure you want to delete ${selectedIds.size} session(s)? This action is irreversible.",
+                        color = Color.Gray,
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    Spacer(Modifier.height(32.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = { showDeleteDialog = false },
+                            modifier = Modifier.weight(1f).height(48.dp),
+                            shape = RoundedCornerShape(100.dp),
+                            border = BorderStroke(1.dp, Color.White.copy(0.12f)),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+                        ) {
+                            Text("Cancel", style = MaterialTheme.typography.labelLarge)
+                        }
+
+                        Button(
+                            onClick = {
+                                viewModel.deleteSessions(selectedIds.map { it.toInt() })
+                                selectedIds = emptySet()
+                                showDeleteDialog = false
+                            },
+                            modifier = Modifier.weight(1f).height(48.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
+                            shape = RoundedCornerShape(100.dp)
+                        ) {
+                            Text(
+                                "Delete",
+                                color = Color.White,
+                                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
+                            )
+                        }
+                    }
                 }
             }
-        )
+        }
     }
 }
 
@@ -324,9 +337,9 @@ private fun SessionHistoryCard(
 
     val getTelemetryColor = { count: Int ->
         when (count) {
-            0 -> Color(0xFF4CAF50)      // Green
-            in 1..2 -> Color(0xFFFFA726)   // Amber/Orange
-            else -> Color(0xFFEF5350)           // Red
+            0 -> Color(0xFF4CAF50)
+            in 1..2 -> Color(0xFFFFA726)
+            else -> Color(0xFFEF5350)
         }
     }
 
@@ -340,27 +353,22 @@ private fun SessionHistoryCard(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
             ).animateContentSize(),
-        color = if (isSelected) SoftIndigo.copy(0.07f) else Color(0xFF141414), // Dark Charcoal
+        color = if (isSelected) SoftIndigo.copy(0.07f) else Color(0xFF141414),
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(
             width = if (isSelected) 1.5.dp else 1.dp,
             color = if (isSelected) SoftIndigo.copy(0.65f) else Color.White.copy(alpha = 0.05f))
     ) {
         Box {
-            Column(
-                modifier = Modifier.padding(20.dp)
-            ) {
-                // Header: Date/Time
+            Column(modifier = Modifier.padding(20.dp)) {
                 Text(
-                    text = item.dataTimeStr.uppercase(),
+                    text = item.dataTimeStr,
                     style = MaterialTheme.typography.labelSmall.copy(
                         color = Color.DarkGray,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp
+                        fontWeight = FontWeight.Bold
                     )
                 )
                 Spacer(Modifier.height(6.dp))
-                // Title
                 Text(
                     text = item.title,
                     style = MaterialTheme.typography.bodyLarge.copy(
@@ -371,25 +379,22 @@ private fun SessionHistoryCard(
 
                 Spacer(Modifier.height(20.dp))
 
-                // Duration Row
                 HistoryMetricRow(
-                    label = "DURATION",
+                    label = "Duration",
                     value = "${item.durationMinutes} min",
                     valueColor = Color.White
                 )
 
                 Spacer(Modifier.height(10.dp))
 
-                // Status Row
-                val statusText = if (item.isCompleted) "✓ Completed" else "✕ Abandoned"
+                val statusText = if (item.isCompleted) "Completed" else "Abandoned"
                 val statusColor = if (item.isCompleted) SoftIndigo else Color.Gray
                 HistoryMetricRow(
-                    label = "STATUS",
+                    label = "Status",
                     value = statusText,
                     valueColor = statusColor
                 )
 
-                // Telemetry Expansion
                 AnimatedVisibility(
                     visible = isExpanded,
                     enter = expandVertically(),
@@ -401,9 +406,8 @@ private fun SessionHistoryCard(
                         Spacer(Modifier.height(16.dp))
 
                         Text(
-                            text = "TELEMETRY",
+                            text = "Telemetry",
                             style = MaterialTheme.typography.labelSmall.copy(
-                                fontFamily = FontFamily.Monospace,
                                 color = Color.DarkGray,
                                 fontWeight = FontWeight.Bold
                             )
@@ -411,7 +415,6 @@ private fun SessionHistoryCard(
 
                         Spacer(Modifier.height(16.dp))
 
-                        // Pickups
                         HistoryMetricRow(
                             label = "Pickups",
                             value = item.pickups.toString(),
@@ -420,7 +423,6 @@ private fun SessionHistoryCard(
 
                         Spacer(Modifier.height(10.dp))
 
-                        // App Switches
                         HistoryMetricRow(
                             label = "App Switches",
                             value = item.appSwitches.toString(),
@@ -429,12 +431,10 @@ private fun SessionHistoryCard(
 
                         Spacer(Modifier.height(10.dp))
 
-                        // Score Impact
                         val prefix = if (item.scoreImpact >= 0) "+" else ""
-                        val impactColor =
-                            if (item.scoreImpact >= 0) SoftIndigo else Color(0xFFEF4444)
+                        val impactColor = if (item.scoreImpact >= 0) SoftIndigo else Color(0xFFEF4444)
                         HistoryMetricRow(
-                            label = "Focus Score Impact",
+                            label = "Focus score impact",
                             value = "$prefix${item.scoreImpact} pts",
                             valueColor = impactColor
                         )
@@ -472,12 +472,11 @@ private fun HistoryMetricRow(
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.labelSmall.copy(color = Color.Gray)
+            style = MaterialTheme.typography.bodySmall.copy(color = Color.Gray)
         )
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium.copy(
-                fontFamily = FontFamily.Monospace,
                 fontWeight = FontWeight.Bold,
                 color = valueColor
             )

@@ -5,7 +5,6 @@ import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -51,7 +50,13 @@ fun SensorySettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Sensory Punishment", color = Color.White, fontWeight = FontWeight.Bold) },
+                title = { 
+                    Text(
+                        "Sensory Punishment", 
+                        color = Color.White, 
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                    ) 
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = Color.White)
@@ -67,18 +72,20 @@ fun SensorySettingsScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .padding(horizontal = 24.dp)
+                    .padding(horizontal = 20.dp)
                     .verticalScroll(rememberScrollState())
             ) {
-                SettingsSectionHeader("PHYSICAL ENFORCEMENT")
+                Spacer(Modifier.height(16.dp))
+                
+                SettingsSectionHeader("Physical enforcement")
 
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Haptic Punishment", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-                        Text("Vibrate the device when distractions are detected.", color = MutedGray, fontSize = 13.sp)
+                        Text("Haptic Punishment", color = Color.White, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold))
+                        Text("Vibrate the device when distractions are detected.", color = MutedGray, style = MaterialTheme.typography.bodySmall)
                     }
                     Switch(
                         checked = p.isHapticsEnabled,
@@ -92,16 +99,17 @@ fun SensorySettingsScreen(
 
                 Spacer(Modifier.height(32.dp))
 
-                SettingsSectionHeader("VIBRATION STRENGTH")
+                SettingsSectionHeader("Vibration strength")
                 
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("INTENSITY", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("Intensity", color = Color.White, style = MaterialTheme.typography.bodyLarge)
                     Text(
                         text = "${p.vibrationStrength}%",
                         color = if (p.isHapticsEnabled) SoftIndigo else MutedGray,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.Monospace
+                        )
                     )
                 }
 
@@ -114,12 +122,13 @@ fun SensorySettingsScreen(
                         thumbColor = Color.White,
                         activeTrackColor = SoftIndigo,
                         inactiveTrackColor = Color.DarkGray
-                    )
+                    ),
+                    modifier = Modifier.padding(vertical = 8.dp)
                 )
 
                 Spacer(Modifier.height(32.dp))
 
-                SettingsSectionHeader("PUNISHMENT PATTERN")
+                SettingsSectionHeader("Punishment pattern")
                 
                 Surface(
                     modifier = Modifier
@@ -131,12 +140,11 @@ fun SensorySettingsScreen(
                 ) {
                     Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
-                            Text("Current Pattern", color = MutedGray, fontSize = 12.sp)
+                            Text("Current Pattern", color = MutedGray, style = MaterialTheme.typography.labelSmall)
                             Text(
                                 text = VibrationManager.getPatternName(p.vibrationPattern),
                                 color = if (p.isHapticsEnabled) Color.White else MutedGray,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold
+                                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                             )
                         }
                         Icon(Icons.Default.KeyboardArrowDown, null, tint = MutedGray)
@@ -158,7 +166,7 @@ fun SensorySettingsScreen(
                     shape = RoundedCornerShape(12.dp),
                     enabled = p.isHapticsEnabled
                 ) {
-                    Text("TEST PUNISHMENT", fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                    Text("Test punishment", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
                 }
 
                 if (p.vibrationStrength > 80) {
@@ -171,10 +179,12 @@ fun SensorySettingsScreen(
                         Text(
                             "High intensity may drain battery faster.",
                             color = Color(0xFFFFB74D),
-                            fontSize = 11.sp
+                            style = MaterialTheme.typography.bodySmall
                         )
                     }
                 }
+                
+                Spacer(Modifier.height(48.dp))
             }
         }
     }
@@ -185,7 +195,11 @@ fun SensorySettingsScreen(
             containerColor = Color(0xFF111111)
         ) {
             Column(modifier = Modifier.padding(24.dp).padding(bottom = 32.dp)) {
-                Text("CHOOSE PATTERN", color = SoftIndigo, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp, fontFamily = FontFamily.Monospace)
+                Text(
+                    "Choose pattern", 
+                    color = SoftIndigo, 
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
+                )
                 Spacer(Modifier.height(16.dp))
                 
                 (0..4).forEach { index ->
@@ -208,7 +222,7 @@ private fun PatternOption(title: String, isSelected: Boolean, onClick: () -> Uni
     ) {
         RadioButton(selected = isSelected, onClick = null, colors = RadioButtonDefaults.colors(selectedColor = SoftIndigo))
         Spacer(Modifier.width(16.dp))
-        Text(title, color = if (isSelected) Color.White else MutedGray, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text(title, color = if (isSelected) Color.White else MutedGray, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold))
     }
 }
 
@@ -217,10 +231,10 @@ private fun SettingsSectionHeader(text: String) {
     Text(
         text = text,
         color = SoftIndigo,
-        fontSize = 11.sp,
-        fontWeight = FontWeight.Bold,
-        letterSpacing = 1.5.sp,
-        fontFamily = FontFamily.Monospace,
+        style = MaterialTheme.typography.labelLarge.copy(
+            fontWeight = FontWeight.Bold,
+            fontSize = 14.sp
+        ),
         modifier = Modifier.padding(vertical = 16.dp)
     )
 }

@@ -60,7 +60,6 @@ fun EngineRulesContent(
             .padding(24.dp)
             .padding(bottom = 48.dp)
     ) {
-        // --- HEADER ---
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -68,20 +67,18 @@ fun EngineRulesContent(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "ENGINE RULES",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontFamily = FontFamily.Monospace,
+                    text = "Engine rules",
+                    style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold,
-                        color = SoftIndigo,
-                        letterSpacing = 2.sp
+                        color = Color.White
                     )
                 )
 
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(8.dp))
                 Text(
-                    text = "How your Focus Score is calculated and what each tier means.",
+                    text = "How your focus score is calculated and what each tier means.",
                     style = MaterialTheme.typography.bodySmall.copy(
-                        color = MutedGray.copy(alpha = 0.6f)
+                        color = MutedGray
                     )
                 )
             }
@@ -95,23 +92,20 @@ fun EngineRulesContent(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // --- 1. SCORING EVENTS TABLE ---
         Text(
-            "SCORING EVENTS",
-            style = MaterialTheme.typography.labelSmall.copy(
-                fontFamily = FontFamily.Monospace,
+            "Scoring events",
+            style = MaterialTheme.typography.labelLarge.copy(
                 fontWeight = FontWeight.Bold,
-                color = MutedGray.copy(alpha = 0.4f),
-                letterSpacing = 1.sp
+                color = SoftIndigo
             ),
             modifier = Modifier.padding(bottom = 12.dp)
         )
 
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(16.dp),
             color = Charcoal,
-            border = BorderStroke(1.dp, Color.DarkGray.copy(alpha = 0.3f))
+            border = BorderStroke(1.dp, Color.White.copy(0.05f))
         ) {
             Column {
                 val events = listOf(
@@ -133,7 +127,7 @@ fun EngineRulesContent(
                         HorizontalDivider(
                             modifier = Modifier.padding(horizontal = 16.dp),
                             thickness = 0.5.dp,
-                            color = Color.DarkGray.copy(alpha = 0.3f)
+                            color = Color.White.copy(0.05f)
                         )
                     }
                 }
@@ -142,50 +136,45 @@ fun EngineRulesContent(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // --- 2. TIER THRESHOLDS TABLE ---
         Text(
-            "TIER THRESHOLDS",
-            style = MaterialTheme.typography.labelSmall.copy(
-                fontFamily = FontFamily.Monospace,
+            "Tier thresholds",
+            style = MaterialTheme.typography.labelLarge.copy(
                 fontWeight = FontWeight.Bold,
-                color = MutedGray.copy(alpha = 0.4f),
-                letterSpacing = 1.sp
+                color = SoftIndigo
             ),
             modifier = Modifier.padding(bottom = 12.dp)
         )
 
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(16.dp),
             color = Charcoal,
-            border = BorderStroke(1.dp, Color.DarkGray.copy(alpha = 0.3f))
+            border = BorderStroke(1.dp, Color.White.copy(0.05f))
         ) {
             Column {
-                TierRow(id = "T1", name = "INITIALIZING", range = "0 - 499", tierLabel = currentTierLabel)
+                TierRow(id = "T1", name = "Initializing", range = "0 - 499", tierLabel = currentTierLabel)
                 TierDivider()
-                TierRow(id = "T2", name = "BUILDING FOCUS", range = "500 - 1,499", tierLabel = currentTierLabel)
+                TierRow(id = "T2", name = "Building focus", range = "500 - 1,499", tierLabel = currentTierLabel)
                 TierDivider()
-                TierRow(id = "T3", name = "DEEP WORKER", range = "1,500 - 2,999", tierLabel = currentTierLabel)
+                TierRow(id = "T3", name = "Deep worker", range = "1,500 - 2,999", tierLabel = currentTierLabel)
                 TierDivider()
-                TierRow(id = "T4", name = "FLOW STATE", range = "3,000 - 4,999", tierLabel = currentTierLabel)
+                TierRow(id = "T4", name = "Flow state", range = "3,000 - 4,999", tierLabel = currentTierLabel)
                 TierDivider()
-                TierRow(id = "T5", name = "ZENITH ACHIEVED", range = "5,000+", tierLabel = currentTierLabel)
+                TierRow(id = "T5", name = "Zenith achieved", range = "5,000+", tierLabel = currentTierLabel)
             }
         }
 
         Spacer(modifier = Modifier.height(40.dp))
 
-        // --- 3. STREAK LOGIC INFO BOX (System Directive) ---
         Surface(
             modifier = Modifier.fillMaxWidth(),
             color = Charcoal,
-            shape = RoundedCornerShape(4.dp)
+            shape = RoundedCornerShape(12.dp)
         ) {
             Row(modifier = Modifier.height(IntrinsicSize.Min)) {
-                // Indigo Left Indicator
                 Box(
                     modifier = Modifier
-                        .width(3.dp)
+                        .width(4.dp)
                         .fillMaxHeight()
                         .background(SoftIndigo)
                 )
@@ -193,19 +182,14 @@ fun EngineRulesContent(
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
                         text = buildAnnotatedString {
-                            withStyle(
-                                SpanStyle(
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            ) {
-                                append("The Simple Rule: ")
+                            withStyle(SpanStyle(color = Color.White, fontWeight = FontWeight.Bold)) {
+                                append("The simple rule: ")
                             }
-                            withStyle(SpanStyle(color = MutedGray, fontStyle = FontStyle.Italic)) {
-                                append("One completed session = day saved.\n")
+                            withStyle(SpanStyle(color = MutedGray)) {
+                                append("One completed session saves your day. ")
                             }
                             withStyle(SpanStyle(color = MutedGray.copy(alpha = 0.8f))) {
-                                append("Did the user complete at least ONE session today? ")
+                                append("Complete at least one session today to keep your streak alive. ")
                             }
                             withStyle(SpanStyle(color = SoftGreen, fontWeight = FontWeight.Bold)) {
                                 append("Yes = streak lives. ")
@@ -214,10 +198,7 @@ fun EngineRulesContent(
                                 append("No = streak breaks.")
                             }
                         },
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            fontFamily = FontFamily.Monospace,
-                            lineHeight = 20.sp
-                        )
+                        style = MaterialTheme.typography.bodySmall.copy(lineHeight = 20.sp)
                     )
                 }
             }
@@ -236,12 +217,11 @@ private fun ScoringRow(label: String, pts: String, isNegative: Boolean) {
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.bodySmall.copy(color = OffWhite.copy(alpha = 0.9f))
+            style = MaterialTheme.typography.bodySmall.copy(color = Color.White)
         )
         Text(
             text = pts,
             style = MaterialTheme.typography.bodySmall.copy(
-                fontFamily = FontFamily.Monospace,
                 fontWeight = FontWeight.Bold,
                 color = if (isNegative) SoftRed else SoftIndigo
             )
@@ -254,14 +234,14 @@ private fun TierDivider() {
     HorizontalDivider(
         modifier = Modifier.padding(horizontal = 16.dp),
         thickness = 0.5.dp,
-        color = Color.DarkGray.copy(alpha = 0.3f)
+        color = Color.White.copy(0.05f)
     )
 }
 
 @Composable
 private fun TierRow(id: String, name: String, range: String, tierLabel: String) {
     val isCurrent = tierLabel == name
-    val rowBg = if (isCurrent) SoftIndigo.copy(alpha = 0.1f) else Color.Transparent
+    val rowBg = if (isCurrent) SoftIndigo.copy(alpha = 0.12f) else Color.Transparent
     val contentColor = if (isCurrent) SoftIndigo else MutedGray
 
     Row(
@@ -275,7 +255,6 @@ private fun TierRow(id: String, name: String, range: String, tierLabel: String) 
             text = id,
             modifier = Modifier.width(28.dp),
             style = MaterialTheme.typography.labelSmall.copy(
-                fontFamily = FontFamily.Monospace,
                 color = contentColor.copy(alpha = 0.6f)
             )
         )
@@ -283,7 +262,7 @@ private fun TierRow(id: String, name: String, range: String, tierLabel: String) 
         Text(
             text = name,
             modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.labelSmall.copy(
+            style = MaterialTheme.typography.bodySmall.copy(
                 fontWeight = FontWeight.Bold,
                 color = contentColor
             )
@@ -292,14 +271,14 @@ private fun TierRow(id: String, name: String, range: String, tierLabel: String) 
         if (isCurrent) {
             Surface(
                 color = SoftIndigo,
-                shape = RoundedCornerShape(4.dp),
+                shape = RoundedCornerShape(100.dp),
                 modifier = Modifier.padding(end = 12.dp)
             ) {
                 Text(
-                    text = "YOU",
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                    text = "Current",
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                     style = MaterialTheme.typography.labelSmall.copy(
-                        fontSize = 9.sp,
+                        fontSize = 10.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = Color.White
                     )
@@ -310,8 +289,7 @@ private fun TierRow(id: String, name: String, range: String, tierLabel: String) 
         Text(
             text = range,
             style = MaterialTheme.typography.labelSmall.copy(
-                fontFamily = FontFamily.Monospace,
-                color = MutedGray.copy(alpha = 0.4f)
+                color = MutedGray.copy(alpha = 0.5f)
             )
         )
     }

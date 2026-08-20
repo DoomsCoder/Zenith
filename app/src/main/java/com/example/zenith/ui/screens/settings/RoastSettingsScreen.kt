@@ -32,7 +32,13 @@ fun RoastSettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Notifications & Roasts", color = Color.White, fontWeight = FontWeight.Bold) },
+                title = { 
+                    Text(
+                        "Notifications & Roasts", 
+                        color = Color.White, 
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                    ) 
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = Color.White)
@@ -48,12 +54,13 @@ fun RoastSettingsScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .padding(horizontal = 24.dp)
+                    .padding(horizontal = 20.dp)
                     .verticalScroll(rememberScrollState())
             ) {
-                SettingsSectionHeader("ROAST INTENSITY")
+                Spacer(Modifier.height(16.dp))
                 
-                // Dropdown-style Selection Box
+                SettingsSectionHeader("Roast intensity")
+                
                 IntensitySelector(
                     currentLevel = p.roastIntensity,
                     onClick = { showIntensitySheet = true }
@@ -61,25 +68,26 @@ fun RoastSettingsScreen(
 
                 Spacer(Modifier.height(40.dp))
 
-                SettingsSectionHeader("PUSH THROTTLING")
+                SettingsSectionHeader("Push throttling")
                 
                 Text(
                     text = "Minimum gap between push alerts during a session. Prevents notification fatigue.",
                     color = MutedGray,
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp
+                    style = MaterialTheme.typography.bodyMedium,
+                    lineHeight = 20.sp
                 )
                 
                 Spacer(Modifier.height(24.dp))
                 
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("GAP INTENSITY", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("Gap intensity", color = Color.White, style = MaterialTheme.typography.bodyLarge)
                     Text(
                         text = "${p.notificationThrottlingSeconds}s",
                         color = SoftIndigo,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.Monospace
+                        )
                     )
                 }
 
@@ -99,12 +107,13 @@ fun RoastSettingsScreen(
                         inactiveTrackColor = Color.DarkGray,
                         activeTickColor = Color.Transparent,
                         inactiveTickColor = Color.Transparent
-                    )
+                    ),
+                    modifier = Modifier.padding(vertical = 8.dp)
                 )
                 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     listOf("5s", "15s", "30s", "60s").forEach { label ->
-                        Text(label, color = MutedGray, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
+                        Text(label, color = MutedGray, style = MaterialTheme.typography.labelSmall)
                     }
                 }
 
@@ -121,12 +130,9 @@ fun RoastSettingsScreen(
         ) {
             Column(modifier = Modifier.padding(24.dp).padding(bottom = 32.dp)) {
                 Text(
-                    "CHOOSE INTENSITY",
+                    "Choose intensity",
                     color = SoftIndigo,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 2.sp,
-                    fontFamily = FontFamily.Monospace
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
                 )
                 Spacer(Modifier.height(16.dp))
                 
@@ -169,9 +175,9 @@ private fun IntensitySelector(currentLevel: Int, onClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(Modifier.weight(1f)) {
-                Text(text = "Current Level", color = MutedGray, fontSize = 12.sp)
-                Text(text = title, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                Text(text = sub, color = SoftIndigo, fontSize = 13.sp)
+                Text(text = "Current Level", color = MutedGray, style = MaterialTheme.typography.labelSmall)
+                Text(text = title, color = Color.White, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold))
+                Text(text = sub, color = SoftIndigo, style = MaterialTheme.typography.bodySmall)
             }
             Icon(Icons.Default.KeyboardArrowDown, null, tint = MutedGray)
         }
@@ -199,8 +205,8 @@ private fun IntensityOption(
         )
         Spacer(Modifier.width(16.dp))
         Column {
-            Text(title, color = if (isSelected) Color.White else MutedGray, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-            Text(desc, color = if (isSelected) SoftIndigo.copy(0.7f) else MutedGray.copy(0.6f), fontSize = 13.sp)
+            Text(title, color = if (isSelected) Color.White else MutedGray, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold))
+            Text(desc, color = if (isSelected) SoftIndigo.copy(0.7f) else MutedGray.copy(0.6f), style = MaterialTheme.typography.bodySmall)
         }
     }
 }
@@ -210,10 +216,10 @@ private fun SettingsSectionHeader(text: String) {
     Text(
         text = text,
         color = SoftIndigo,
-        fontSize = 11.sp,
-        fontWeight = FontWeight.Bold,
-        letterSpacing = 1.5.sp,
-        fontFamily = FontFamily.Monospace,
+        style = MaterialTheme.typography.labelLarge.copy(
+            fontWeight = FontWeight.Bold,
+            fontSize = 14.sp
+        ),
         modifier = Modifier.padding(vertical = 16.dp)
     )
 }

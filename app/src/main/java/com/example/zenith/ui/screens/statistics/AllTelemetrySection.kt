@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.zenith.ui.theme.MutedGray
+import com.example.zenith.ui.theme.SoftIndigo
 
 @SuppressLint("DefaultLocale")
 @Composable
@@ -28,39 +29,36 @@ fun AllTelemetrySection(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        // Section Header
         Text(
-            text = "ALL-TIME TELEMETRY",
-            style = MaterialTheme.typography.labelMedium.copy(
-                fontFamily = FontFamily.Monospace,
+            text = "All-time telemetry",
+            style = MaterialTheme.typography.labelLarge.copy(
                 fontWeight = FontWeight.Bold,
-                letterSpacing = 1.5.sp,
-                color = MutedGray.copy(0.7f)
+                color = SoftIndigo
             )
         )
 
         Spacer(modifier = modifier.height(16.dp))
 
         TelemetryRow(
-            label = "Total Sessions",
+            label = "Total sessions",
             value = metrics.totalSessions.toString()
         )
         TelemetryDivider()
 
         TelemetryRow(
-            label = "Total Focus Hours",
+            label = "Total focus hours",
             value = String.format("%.1fh", metrics.totalHours)
         )
         TelemetryDivider()
 
         TelemetryRow(
-            label = "Completion Rate",
+            label = "Completion rate",
             value = "${metrics.completionRate}%"
         )
         TelemetryDivider()
 
         TelemetryRow(
-            label = "Best Streak",
+            label = "Best streak",
             value = "${metrics.bestStreak} days"
         )
     }
@@ -75,7 +73,6 @@ private fun TelemetryRow(label: String, value: String) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Label Styling (Left Side)
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium.copy(
@@ -83,13 +80,11 @@ private fun TelemetryRow(label: String, value: String) {
             )
         )
 
-        // Value Styling (Right Side)
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium.copy(
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Medium,
-                color = Color(0xFFE2E8F0) // Crispy Off-White
+                fontWeight = FontWeight.Bold,
+                color = Color.White
             )
         )
     }

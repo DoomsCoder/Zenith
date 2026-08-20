@@ -23,6 +23,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Adjust
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -58,11 +60,9 @@ fun TodayMissionLogSection(
     onStartSessionClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Accordion State: Tracks which card ID is expanded. null means all are closed.
     var expandedSessionId by remember { mutableStateOf<String?>(null) }
 
     Column(modifier = modifier.fillMaxWidth()) {
-        // Section Header
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -71,22 +71,17 @@ fun TodayMissionLogSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "TODAY'S MISSION LOG",
-                style = MaterialTheme.typography.labelMedium.copy(
-                    fontFamily = FontFamily.Monospace,
+                text = "Today's mission log",
+                style = MaterialTheme.typography.labelLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.5.sp,
-                    color = MutedGray.copy(alpha = 0.7f)
+                    color = SoftIndigo
                 )
             )
 
             if (sessions.isNotEmpty()) {
                 Text(
                     text = "${sessions.size} sessions",
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontFamily = FontFamily.Monospace,
-                        color = MutedGray.copy(0.5f)
-                    )
+                    style = MaterialTheme.typography.bodySmall.copy(color = MutedGray)
                 )
             }
         }
@@ -123,14 +118,13 @@ fun ExpandableSessionCard(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
             ) { onToggle() },
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.White.copy(0.03f)
         ),
         border = BorderStroke(1.dp, Color.White.copy(0.05f))
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
-            //Collapsed Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -140,18 +134,15 @@ fun ExpandableSessionCard(
                     modifier = Modifier.weight(1f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontFamily = FontFamily.Monospace,
-                        color = OffWhite
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White
                     ),
                 )
 
                 Text(
                     text = "${session.durationMinutes} min",
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontFamily = FontFamily.Monospace,
-                        color = MutedGray
-                    )
+                    style = MaterialTheme.typography.bodySmall.copy(color = MutedGray)
                 )
 
                 Spacer(modifier = Modifier.width(12.dp))
@@ -164,46 +155,46 @@ fun ExpandableSessionCard(
                 )
             }
 
-            val statusText = if (session.isCompleted) "✓ Complete" else "✗ Abandoned"
+            val statusText = if (session.isCompleted) "Completed" else "Abandoned"
             val statusColor = if (session.isCompleted) SoftIndigo else Color(0xFFEF5350).copy(0.7f)
 
             if (isExpanded) {
                 Spacer(modifier = Modifier.height(16.dp))
                 HorizontalDivider(color = Color.White.copy(0.05f))
                 Spacer(modifier = Modifier.height(16.dp))
-                TelemetryRow("MISSION NAME", session.title)
-                TelemetryRow("DATE & TIME", session.dataTimeStr)
-                TelemetryRow("PLANNED DURATION", "${session.plannedMinutes} min")
-                TelemetryRow("ACTUAL DURATION", "${session.durationMinutes} min")
+                TelemetryRow("Mission name", session.title)
+                TelemetryRow("Date & time", session.dataTimeStr)
+                TelemetryRow("Planned duration", "${session.plannedMinutes} min")
+                TelemetryRow("Actual duration", "${session.durationMinutes} min")
                 TelemetryRow(
-                    "STATUS", value = statusText,
+                    "Status", value = statusText,
                     valueColor = statusColor
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
-                    "TELEMETRY",
+                    "Telemetry",
                     style = MaterialTheme.typography.labelSmall.copy(
-                        fontFamily = FontFamily.Monospace,
-                        color = MutedGray.copy(alpha = 0.5f)
+                        color = MutedGray.copy(alpha = 0.7f),
+                        fontWeight = FontWeight.Bold
                     )
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                HorizontalDivider(color = Color.White.copy(alpha = 0.05f))
+                HorizontalDivider(color = Color.White.copy(0.05f))
                 Spacer(modifier = Modifier.height(16.dp))
 
                 TelemetryRow(
-                    "Phone Pickups",
+                    "Phone pickups",
                     session.pickups.toString(),
                     getTelemetryColor(session.pickups)
                 )
                 TelemetryRow(
-                    "App Switches",
+                    "App switches",
                     session.appSwitches.toString(),
                     getTelemetryColor(session.appSwitches)
                 )
                 TelemetryRow(
-                    "Focus Score Impact",
+                    "Focus score impact",
                     "${if (session.scoreImpact >= 0) "+" else ""}${session.scoreImpact} pts",
                     if (session.scoreImpact >= 0) Color(0xFF4CAF50) else Color(0xFFEF5350)
                 )
@@ -223,18 +214,16 @@ fun TelemetryRow(label: String, value: String, valueColor: Color = Color.White) 
     ) {
         Text(
             text = label,
-            modifier = Modifier.weight(0.4f),
-            style = MaterialTheme.typography.labelSmall.copy(
-                fontFamily = FontFamily.Monospace,
-                color = MutedGray.copy(alpha = 0.6f)
+            modifier = Modifier.weight(0.5f),
+            style = MaterialTheme.typography.bodySmall.copy(
+                color = MutedGray
             )
         )
         Text(
             text = value,
-            modifier = Modifier.weight(0.6f),
+            modifier = Modifier.weight(0.5f),
             textAlign = TextAlign.End,
             style = MaterialTheme.typography.bodySmall.copy(
-                fontFamily = FontFamily.Monospace,
                 fontWeight = FontWeight.Bold,
                 color = valueColor
             )
@@ -248,7 +237,7 @@ fun EmptyStateCard(onStartSessionClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
-        shape = RoundedCornerShape(32.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.Transparent
         ),
@@ -267,7 +256,7 @@ fun EmptyStateCard(onStartSessionClick: () -> Unit) {
                 modifier = Modifier.size(64.dp),
                 shape = CircleShape,
                 color = Color.White.copy(alpha = 0.03f),
-                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
+                border = BorderStroke(1.dp, Color.White.copy(0.05f))
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
@@ -280,26 +269,24 @@ fun EmptyStateCard(onStartSessionClick: () -> Unit) {
             }
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                "No sessions yet today. Your focus\nrecord starts the moment you begin.",
+                "No sessions yet today. Your focus record starts the moment you begin.",
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    fontFamily = FontFamily.Monospace,
                     color = MutedGray.copy(alpha = 0.6f),
                     textAlign = TextAlign.Center
                 )
             )
             Spacer(modifier = Modifier.height(32.dp))
-            OutlinedButton(
+            Button(
                 onClick = onStartSessionClick,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                border = BorderStroke(1.dp, SoftIndigo.copy(0.3f))
+                modifier = Modifier.fillMaxWidth().height(48.dp),
+                shape = RoundedCornerShape(100.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = SoftIndigo)
             ) {
                 Text(
-                    " START FIRST SESSION ",
+                    "Start first session",
                     style = MaterialTheme.typography.labelLarge.copy(
-                        fontFamily = FontFamily.Monospace,
                         fontWeight = FontWeight.Bold,
-                        color = SoftIndigo
+                        color = Color.White
                     )
                 )
             }
@@ -312,21 +299,5 @@ private fun getTelemetryColor(count: Int): Color {
         0 -> Color(0xFF4CAF50)
         in 1..2 -> Color(0xFFFFA726)
         else -> Color(0xFFEF5350)
-    }
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFF121212)
-@Composable
-fun TodayMissionLogPreview() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF121212))
-            .padding(top = 24.dp)
-    ) {
-        TodayMissionLogSection(
-            sessions = emptyList(),
-            onStartSessionClick = {}
-        )
     }
 }

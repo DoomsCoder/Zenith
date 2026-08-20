@@ -77,6 +77,10 @@ class SettingsRepository(private val context: Context) {
     suspend fun updateVibrationPattern(pattern: Int) {
         context.dataStore.edit { it[KEY_VIBRATION_PATTERN] = pattern }
     }
+
+    suspend fun resetToDefaults() {
+        context.dataStore.edit { it.clear() }
+    }
 }
 
 data class UserPreferences(

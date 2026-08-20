@@ -22,13 +22,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
@@ -63,37 +64,30 @@ fun FocusScoreSection(
     onShowRules: () -> Unit
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        // Hero Section Area
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = "FOCUS SCORE",
-                style = MaterialTheme.typography.labelMedium.copy(
-                    fontFamily = FontFamily.Monospace,
+                text = "Focus score",
+                style = MaterialTheme.typography.labelLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.5.sp,
-                    color = MutedGray.copy(0.7f)
+                    color = SoftIndigo
                 )
             )
             Spacer(Modifier.width(12.dp))
             Surface(
                 onClick = onShowRules,
                 shape = CircleShape,
-                color = SoftIndigo.copy(0.15f),
-                border = BorderStroke(
-                    1.dp,
-                    SoftIndigo.copy(0.3f)
-                )
+                color = SoftIndigo.copy(0.12f),
+                border = BorderStroke(1.dp, SoftIndigo.copy(0.2f))
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(Icons.Outlined.Info, null, Modifier.size(12.dp), tint = SoftIndigo)
+                    Icon(Icons.Outlined.Info, null, Modifier.size(14.dp), tint = SoftIndigo)
                     Spacer(Modifier.width(4.dp))
                     Text(
-                        "RULES",
+                        "Rules",
                         style = MaterialTheme.typography.labelSmall.copy(
-                            fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             color = SoftIndigo
                         )
@@ -111,25 +105,20 @@ fun FocusScoreSection(
         val deltaColor = if (weeklyDelta >= 0) Color(0xFF4CAF50) else Color(0xFFEF5350)
         Text(
             "$deltaPrefix$weeklyDelta pts this week",
-            style = MaterialTheme.typography.labelSmall.copy(
-                fontFamily = FontFamily.Monospace,
-                color = deltaColor
-            )
+            style = MaterialTheme.typography.bodySmall.copy(color = deltaColor)
         )
         Text(
             String.format("%,d", score),
             style = MaterialTheme.typography.displayLarge.copy(
-                fontFamily = FontFamily.Monospace,
-                fontSize = 56.sp,
+                fontWeight = FontWeight.Light,
+                fontSize = 64.sp,
                 color = Color.White
             )
         )
         Text(
-            "── $currentTierLabel ──",
-            style = MaterialTheme.typography.labelSmall.copy(
-                fontFamily = FontFamily.Monospace,
-                letterSpacing = 4.sp,
-                fontWeight = FontWeight.Bold,
+            currentTierLabel,
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontWeight = FontWeight.SemiBold,
                 color = SoftIndigo
             )
         )
@@ -140,18 +129,8 @@ fun FocusScoreSection(
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             val percentage = (tierProgress * 100).toInt()
             Text(
-                "$percentage% to $currentTierLabel",
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontFamily = FontFamily.Monospace,
-                    color = MutedGray.copy(0.6f)
-                )
-            )
-            Text(
-                "NEXT TIER",
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontFamily = FontFamily.Monospace,
-                    color = MutedGray.copy(0.4f)
-                )
+                "$percentage% to next tier",
+                style = MaterialTheme.typography.labelSmall.copy(color = MutedGray)
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
@@ -159,15 +138,15 @@ fun FocusScoreSection(
             progress = { tierProgress },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(2.dp),
+                .height(4.dp),
             color = SoftIndigo,
-            trackColor = Color.White.copy(0.05f)
+            trackColor = Color.White.copy(0.05f),
+            strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
         )
     }
 
     Spacer(modifier = Modifier.height(40.dp))
 
-    // Streak Module
     if (!isStreakLost) {
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -188,11 +167,10 @@ fun FocusScoreSection(
                     Text(
                         "$currentStreak days",
                         color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace
+                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
                     )
                     Text(
-                        "CURRENT STREAK",
+                        "Current streak",
                         style = MaterialTheme.typography.labelSmall,
                         color = MutedGray
                     )
@@ -206,11 +184,10 @@ fun FocusScoreSection(
                     Text(
                         "$bestStreak days",
                         color = MutedGray,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace
+                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
                     )
                     Text(
-                        "PERSONAL BEST",
+                        "Personal best",
                         style = MaterialTheme.typography.labelSmall,
                         color = MutedGray.copy(0.5f)
                     )
@@ -232,16 +209,15 @@ fun FocusScoreSection(
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        "STREAK LOST",
+                        "Streak lost",
                         color = MutedGray,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace
+                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
                     )
                 }
                 Spacer(Modifier.height(20.dp))
-                TelemetryRow("CURRENT", "0 days", valueColor = MutedGray)
+                TelemetryRow("Current", "0 days", valueColor = MutedGray)
                 TelemetryRow(
-                    "RECORD",
+                    "Record",
                     "⚡ $bestStreak-day best intact",
                     valueColor = SoftIndigo.copy(0.7f)
                 )
@@ -252,19 +228,16 @@ fun FocusScoreSection(
                     style = MaterialTheme.typography.bodySmall
                 )
                 Spacer(Modifier.height(24.dp))
-                OutlinedButton(
+                Button(
                     onClick = onRecoveryClick,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, SoftIndigo.copy(0.3f))
+                    modifier = Modifier.fillMaxWidth().height(48.dp),
+                    shape = RoundedCornerShape(100.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = SoftIndigo)
                 ) {
                     Text(
-                        " BEGIN RECOVERY SESSION ",
-                        color = SoftIndigo,
-                        style = MaterialTheme.typography.labelLarge.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = FontFamily.Monospace
-                        )
+                        "Begin recovery session",
+                        color = Color.White,
+                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
                     )
                 }
             }
@@ -273,7 +246,6 @@ fun FocusScoreSection(
 
     Spacer(modifier = Modifier.height(24.dp))
 
-    // --- 3. SCORE BREAKDOWN ---
     var expanded by remember { mutableStateOf(false) }
     Card(
         modifier = Modifier
@@ -294,9 +266,8 @@ fun FocusScoreSection(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    "SCORE BREAKDOWN",
+                    "Score breakdown",
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        fontFamily = FontFamily.Monospace,
                         fontWeight = FontWeight.SemiBold,
                         color = OffWhite.copy(0.7f)
                     )
@@ -310,12 +281,12 @@ fun FocusScoreSection(
             }
             if (expanded) {
                 Spacer(Modifier.height(24.dp))
-                TelemetryRow("Sessions Completed", "+${breakdown.completionPoints} pts", valueColor = SoftIndigo)
-                TelemetryRow("Focus Minutes", "+${breakdown.focusMinutePoints} pts", valueColor = SoftIndigo)
+                TelemetryRow("Sessions completed", "+${breakdown.completionPoints} pts", valueColor = SoftIndigo)
+                TelemetryRow("Focus minutes", "+${breakdown.focusMinutePoints} pts", valueColor = SoftIndigo)
                 TelemetryRow("Abandonments", "-${breakdown.abandonmentPenalty} pts", valueColor = Color(0xFFEF5350))
-                TelemetryRow("Pickups Detected", "-${breakdown.pickupPenalty} pts", valueColor = Color(0xFFEF5350))
-                TelemetryRow("App Switches", "-${breakdown.appSwitchPenalty} pts", valueColor = Color(0xFFEF5350))
-                TelemetryRow("Streak Bonus", "+${breakdown.streakBonus} pts", valueColor = SoftIndigo)
+                TelemetryRow("Pickups detected", "-${breakdown.pickupPenalty} pts", valueColor = Color(0xFFEF5350))
+                TelemetryRow("App switches", "-${breakdown.appSwitchPenalty} pts", valueColor = Color(0xFFEF5350))
+                TelemetryRow("Streak bonus", "+${breakdown.streakBonus} pts", valueColor = SoftIndigo)
                 Spacer(Modifier.height(16.dp))
                 HorizontalDivider(color = Color.White.copy(0.05f))
                 Spacer(Modifier.height(16.dp))
@@ -324,16 +295,12 @@ fun FocusScoreSection(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        "TOTAL",
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontFamily = FontFamily.Monospace,
-                            color = MutedGray
-                        )
+                        "Total",
+                        style = MaterialTheme.typography.labelSmall.copy(color = MutedGray)
                     )
                     Text(
                         String.format("%,d pts", score),
                         style = MaterialTheme.typography.bodyLarge.copy(
-                            fontFamily = FontFamily.Monospace,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
                         )
@@ -343,4 +310,3 @@ fun FocusScoreSection(
         }
     }
 }
-

@@ -39,8 +39,6 @@ fun CompletionOverlay(
     timestamp: String,
     onDismiss: () -> Unit
 ) {
-    // --- SECTION 1: THE ANIMATION ENGINE ---
-    // We use Animatable to control the exact timing like your Figma code
     val ringProgress = remember { Animatable(0f) }
     val barProgress = remember { Animatable(1f) }
     var showContent by remember { mutableStateOf(false) }
@@ -50,32 +48,26 @@ fun CompletionOverlay(
         onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
         LaunchedEffect(Unit) {
-            // A. Start the Ring filling up (1.6 seconds)
             launch {
                 ringProgress.animateTo(1f, animationSpec = tween(1600, easing = LinearOutSlowInEasing))
-                showDot = true // Pop the dot in right when the ring finishes
+                showDot = true
             }
 
-            // B. Fade in the text with a tiny 100ms delay
             delay(100)
             showContent = true
 
-            // C. Start the 4-second auto-dismiss countdown
             barProgress.animateTo(0f, animationSpec = tween(4000, easing = LinearEasing))
 
-            onDismiss() // Automatically close when bar reaches 0
+            onDismiss()
         }
 
-        // --- SECTION 2: THE BACKGROUND FOUNDATION ---
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                // Solid dark background (0xFF0E0E0E) blocks out the previous screen entirely
                 .background(Color(0xFF0E0E0E))
-                .clickable { onDismiss() }, // Tap anywhere to skip
+                .clickable { onDismiss() },
             contentAlignment = Alignment.Center
         ) {
-            // Subtle Indigo Glow in the background
             Box(
                 modifier = Modifier
                     .size(400.dp)
@@ -86,19 +78,14 @@ fun CompletionOverlay(
                     )
             )
 
-            // --- SECTION 3: THE INFORMATION STACK ---
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                // A. The Multi-Layer Animated Ring
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.size(144.dp)) {
                     Canvas(modifier = Modifier.fillMaxSize()) {
-                        // 1. Ghost Track (Very faint)
                         drawCircle(Color.White.copy(0.02f), radius = 68.dp.toPx(), style = Stroke(1.dp.toPx()))
-                        // 2. Main Track
                         drawCircle(Color.White.copy(0.05f), radius = 58.dp.toPx(), style = Stroke(1.5.dp.toPx()))
-                        // 3. Sharp Indigo Progress Arc
                         drawArc(
                             color = SoftIndigo,
                             startAngle = -90f,
@@ -109,7 +96,6 @@ fun CompletionOverlay(
                             topLeft = androidx.compose.ui.geometry.Offset(14.dp.toPx(), 14.dp.toPx())
                         )
                     }
-                    // Pop-in Center Dot
                     if (showDot) {
                         Box(modifier = Modifier
                             .size(7.dp)
@@ -119,16 +105,15 @@ fun CompletionOverlay(
 
                 Spacer(Modifier.height(30.dp))
 
-                // B. The Data Labels (Fades in)
                 AnimatedVisibility(visible = showContent, enter = fadeIn(tween(600)) + slideInVertically { 20 }) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            "SESSION COMPLETE",
+                            "Session complete",
                             color = SoftIndigo.copy(0.75f),
-                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, letterSpacing = 4.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.SemiBold)
+                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
                         )
                         Spacer(Modifier.height(22.dp))
-                        Text("FOCUSED FOR", color = Color.White.copy(0.3f), fontSize = 9.sp, letterSpacing = 2.sp, fontFamily = FontFamily.Monospace)
+                        Text("Focused for", color = Color.White.copy(0.3f), style = MaterialTheme.typography.labelSmall)
 
                         Spacer(Modifier.height(8.dp))
                         Text(
@@ -139,28 +124,25 @@ fun CompletionOverlay(
 
                         if (missionName.isNotBlank()) {
                             Spacer(Modifier.height(20.dp))
-                            Text("\"$missionName\"", color = Color.White.copy(0.3f), fontStyle = FontStyle.Italic, fontSize = 13.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(horizontal = 40.dp))
+                            Text("\"$missionName\"", color = Color.White.copy(0.3f), fontStyle = FontStyle.Italic, style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center, modifier = Modifier.padding(horizontal = 40.dp))
                         }
 
                         Spacer(Modifier.height(12.dp))
-                        Text(timestamp, color = Color.White.copy(0.2f), fontSize = 9.sp, letterSpacing = 2.sp, fontFamily = FontFamily.Monospace)
+                        Text(timestamp, color = Color.White.copy(0.2f), style = MaterialTheme.typography.labelSmall)
                     }
                 }
             }
 
-            // --- SECTION 4: THE INTERACTIVE FOOTER ---
             Column(
                 modifier = Modifier.align(Alignment.BottomCenter),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // "Tap to Continue" hint (appears after 2 seconds)
                 AnimatedVisibility(visible = barProgress.value < 0.5f, enter = fadeIn()) {
-                    Text("TAP TO CONTINUE", color = Color.White.copy(0.25f), fontSize = 9.sp, letterSpacing = 2.sp, fontFamily = FontFamily.Monospace)
+                    Text("Tap to continue", color = Color.White.copy(0.25f), style = MaterialTheme.typography.labelSmall)
                 }
 
                 Spacer(Modifier.height(100.dp))
 
-                // Horizontal auto-dismiss bar at the absolute bottom
                 Box(modifier = Modifier
                     .fillMaxWidth()
                     .height(1.5.dp)
@@ -175,17 +157,3 @@ fun CompletionOverlay(
     }
 
 }
-
-@Preview(showBackground = true)
-@Composable
-fun CompletionOverlayPreview() {
-    ZenithTheme {
-        CompletionOverlay(
-            missionName = "Deep Work Session",
-            durationText = "00:45",
-            timestamp = "TODAY • 14:30",
-            onDismiss = {}
-        )
-    }
-}
-

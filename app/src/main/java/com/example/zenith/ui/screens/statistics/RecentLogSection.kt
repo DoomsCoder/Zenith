@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.zenith.ui.theme.MutedGray
+import com.example.zenith.ui.theme.SoftIndigo
 
 @Composable
 fun RecentLogSection(
@@ -37,14 +38,11 @@ fun RecentLogSection(
     Column(
         modifier = modifier.fillMaxWidth()
     ) {
-        // Section Header
         Text(
-            text = "RECENT LOG",
-            style = MaterialTheme.typography.labelMedium.copy(
-                fontFamily = FontFamily.Monospace,
+            text = "Recent log",
+            style = MaterialTheme.typography.labelLarge.copy(
                 fontWeight = FontWeight.Bold,
-                letterSpacing = 1.5.sp,
-                color = MutedGray.copy(0.7f)
+                color = SoftIndigo
             )
         )
 
@@ -70,19 +68,17 @@ fun RecentLogSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "VIEW ALL SESSIONS",
-                style = MaterialTheme.typography.labelMedium.copy(
-                    fontFamily = FontFamily.Monospace,
+                text = "View all sessions",
+                style = MaterialTheme.typography.labelLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp,
-                    color = Color(0xFF6366F1) // SoftIndigo
+                    color = SoftIndigo
                 )
             )
             Spacer(modifier = Modifier.width(6.dp))
             Icon(
                 imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
                 contentDescription = null,
-                tint = Color(0xFF6366F1),
+                tint = SoftIndigo,
                 modifier = Modifier.size(16.dp)
             )
         }
@@ -97,11 +93,10 @@ private fun RecentSessionRow(session: SessionHistoryItem) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Left Side: Title
         Text(
             text = session.title,
             style = MaterialTheme.typography.bodyMedium.copy(
-                color = Color(0xFFE2E8F0), // Crispy Off White
+                color = Color.White,
                 fontWeight = FontWeight.Medium
             )
         )
@@ -110,18 +105,16 @@ private fun RecentSessionRow(session: SessionHistoryItem) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.End
         ) {
-            // Right Side: Duration & Status
             Text(
                 text = "${session.durationMinutes}m",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontFamily = FontFamily.Monospace,
-                    color = MutedGray.copy(0.6f)
+                style = MaterialTheme.typography.bodySmall.copy(
+                    color = MutedGray
                 )
             )
             Spacer(Modifier.width(8.dp))
 
             val statusIcon = if (session.isCompleted) Icons.Rounded.Check else Icons.Rounded.Close
-            val statusColor = if (session.isCompleted) Color(0xFF6366F1) else Color.DarkGray
+            val statusColor = if (session.isCompleted) SoftIndigo else Color.DarkGray
 
             Icon(
                 imageVector = statusIcon,

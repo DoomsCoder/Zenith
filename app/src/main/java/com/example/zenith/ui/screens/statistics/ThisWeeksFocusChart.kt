@@ -72,12 +72,9 @@ fun ThisWeeksFocusChart(
 
     var chartSize by remember { mutableStateOf(IntSize.Zero) }
 
-    // Sync data with Vico's Model Provider
     LaunchedEffect(metrics) {
         modelProducer.runTransaction {
             columnSeries {
-                // We split the data into 7 separate series.
-                // Each series only contains the value for its specific day (null for others).
                 metrics.forEachIndexed { i, m ->
                     series(
                         metrics.indices.map { j ->
@@ -98,27 +95,21 @@ fun ThisWeeksFocusChart(
                 indication = null
             ) { onColumnSelected( null ) }
     ) {
-        // Header Section
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "THIS WEEK'S FOCUS",
-                style = MaterialTheme.typography.labelMedium.copy(
-                    fontFamily = FontFamily.Monospace,
+                text = "This week's focus",
+                style = MaterialTheme.typography.labelLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.5.sp,
-                    color = MutedGray.copy(0.7f)
+                    color = SoftIndigo
                 )
             )
             Text(
                 text = "$activeDays / 7 days active",
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontFamily = FontFamily.Monospace,
-                    color = MutedGray.copy(0.4f)
-                )
+                style = MaterialTheme.typography.bodySmall.copy(color = MutedGray)
             )
         }
 
@@ -137,11 +128,10 @@ fun ThisWeeksFocusChart(
                         .padding(bottom = 12.dp),
                     contentAlignment = Alignment.Center
                 ){
-
                         Surface(
-                            color = Color(0xFF1A1A1A), // Dark Charcoal
-                            shape = RoundedCornerShape(6.dp),
-                            border = BorderStroke(1.dp, Color.DarkGray.copy(alpha = 0.5f))
+                            color = Color(0xFF1A1A1A),
+                            shape = RoundedCornerShape(8.dp),
+                            border = BorderStroke(1.dp, Color.White.copy(0.05f))
                         ) {
                             Text(
                                 text = buildString {
@@ -150,10 +140,8 @@ fun ThisWeeksFocusChart(
                                 },
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                                 style = MaterialTheme.typography.bodySmall.copy(
-                                    fontFamily = FontFamily.Monospace,
                                     color = Color.White,
-                                    fontWeight = FontWeight.Medium,
-                                    letterSpacing = 0.5.sp
+                                    fontWeight = FontWeight.Medium
                                 )
                             )
                         }
@@ -161,8 +149,6 @@ fun ThisWeeksFocusChart(
             }
         }
 
-        // We create the components list here so they react to 'selectedColumnIndex'
-        // Chart Section
             CartesianChartHost(
                 chart = rememberCartesianChart(
                     rememberColumnCartesianLayer(
@@ -174,17 +160,14 @@ fun ThisWeeksFocusChart(
                                     val nothingSelected = selectedColumnIndex == null
 
                                     val color = when {
-
                                         nothingSelected -> {
                                             if (isToday) Color(0xFF6366F1)
                                             else SoftIndigo
                                         }
-
                                         isSelected -> {
                                             if (isToday) Color(0xFF6366F1)
                                             else Color(0xFF7C7FF5)
                                         }
-
                                         else -> {
                                             if (isToday) Color(0xFF6366F1).copy(alpha = 0.25f)
                                             else SoftIndigo.copy(alpha = 0.25f)
@@ -210,22 +193,18 @@ fun ThisWeeksFocusChart(
 
                         axisValueOverrider = remember {
                             object : AxisValueOverrider {
-                                // Always start at 0
                                 override fun getMinY(minY: Double, maxY: Double, extraStore: ExtraStore) = 0.0
-
-                                // Ceiling is 60 OR the actual maximum focus time, whichever is higher
                                 override fun getMaxY(minY: Double, maxY: Double, extraStore: ExtraStore) = maxOf(60.0, maxY)
                             }
                         }
                     ),
-                    // Named Parameter: Bottom Axis
                     bottomAxis = rememberBottomAxis(
                         guideline = null,
                         tick = null,
                         line = null,
                         valueFormatter = { x, chartValues, _ ->
                             val date = chartValues.model.extraStore[datesKey][x.toInt()]
-                            if (date == LocalDate.now()) "TODAY" else date.format(DateTimeFormatter.ofPattern("dd"))
+                            if (date == LocalDate.now()) "Today" else date.format(DateTimeFormatter.ofPattern("dd"))
                         },
                         label = rememberTextComponent(
                             color = MutedGray.copy(alpha = 0.7f),
@@ -241,16 +220,13 @@ fun ThisWeeksFocusChart(
                     .pointerInput(selectedColumnIndex) {
                         detectTapGestures { offset ->
                             val totalWidth = chartSize.width.toFloat()
-
                             val paddingPx = 4.dp.toPx()
                             val usableWidth = totalWidth - (paddingPx * 2)
                             val segmentWidth = usableWidth / 7f
-
                             val adjustedX = (offset.x - paddingPx).coerceAtLeast(0f)
                             val tappedIndex = (adjustedX / segmentWidth)
                                 .toInt()
                                 .coerceIn(0, 6)
-
                             onColumnSelected( if (selectedColumnIndex == tappedIndex) null else tappedIndex )
                         }
                     }
@@ -265,10 +241,7 @@ fun ThisWeeksFocusChart(
                 .fillMaxWidth()
                 .padding(top = 16.dp),
             textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.labelSmall.copy(
-                fontFamily = FontFamily.Monospace,
-                color = MutedGray.copy(0.6f)
-            )
+            style = MaterialTheme.typography.bodySmall.copy(color = MutedGray)
         )
     }
 }

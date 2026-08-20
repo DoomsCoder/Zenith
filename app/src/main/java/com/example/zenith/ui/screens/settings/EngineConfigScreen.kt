@@ -5,32 +5,13 @@ import android.content.Intent
 import android.provider.Settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -62,7 +43,7 @@ fun EngineConfigScreen(
                     Text(
                         "Engine Config",
                         color = Color.White,
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                     )
                 },
                 navigationIcon = {
@@ -80,14 +61,16 @@ fun EngineConfigScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .padding(horizontal = 24.dp)
+                    .padding(horizontal = 20.dp)
                     .verticalScroll(rememberScrollState())
             ) {
-                SettingsSectionHeader("ENFORCEMENT")
+                Spacer(Modifier.height(16.dp))
+                
+                SettingsSectionHeader("Enforcement")
 
                 SwitchPreference(
                     title = "Auto Do-Not-Disturb",
-                    subtitle = "Use Android's Priority-only Do Not Disturb while a focus session is active. Requires Do Not Disturb access.",
+                    subtitle = "Use Android's Priority-only Do Not Disturb while a focus session is active.",
                     checked = p.isAutoDndEnabled,
                     onCheckedChange = { enabled ->
                         if (enabled && !notificationManager.isNotificationPolicyAccessGranted) {
@@ -100,31 +83,31 @@ fun EngineConfigScreen(
 
                 SwitchPreference(
                     title = "Call Emergency Shield",
-                    subtitle = "Detect incoming calls and automatically pause the timer and penalties for the duration of the call.",
+                    subtitle = "Automatically pause the timer and penalties during active phone calls.",
                     checked = p.isCallShieldEnabled,
                     onCheckedChange = { viewModel.toggleCallShield(it) }
                 )
 
                 Spacer(Modifier.height(32.dp))
 
-                SettingsSectionHeader("MERCY BUFFER")
+                SettingsSectionHeader("Mercy buffer")
 
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Free violations per session", color = Color.White, fontSize = 16.sp)
+                        Text("Free violations per session", color = Color.White, style = MaterialTheme.typography.bodyLarge)
                         Text(
-                            "Number of free pickups/switches allowed before roasts and penalties activate.",
+                            "Number of free pickups/switches allowed before penalties activate.",
                             color = MutedGray,
-                            fontSize = 13.sp,
-                            lineHeight = 18.sp
+                            style = MaterialTheme.typography.bodySmall
                         )
                     }
                     Text(
                         text = p.mercyBuffer.toString(),
                         color = SoftIndigo,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.Monospace
+                        )
                     )
                 }
 
@@ -137,22 +120,23 @@ fun EngineConfigScreen(
                         thumbColor = Color.White,
                         activeTrackColor = SoftIndigo,
                         inactiveTrackColor = Color.DarkGray
-                    )
+                    ),
+                    modifier = Modifier.padding(vertical = 8.dp)
                 )
 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     listOf("0", "1", "2", "3").forEach { label ->
-                        Text(label, color = MutedGray, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
+                        Text(label, color = MutedGray, style = MaterialTheme.typography.labelSmall)
                     }
                 }
 
                 Spacer(Modifier.height(40.dp))
 
-                SettingsSectionHeader("STRICTNESS LEVEL")
+                SettingsSectionHeader("Strictness level")
                 Text(
-                    "How aggressively Zenith enforces your session. Affects penalties, lock-outs, and roast triggers.",
+                    "How aggressively Zenith enforces your session. Affects penalties and roast triggers.",
                     color = MutedGray,
-                    fontSize = 14.sp,
+                    style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
@@ -172,11 +156,11 @@ private fun SettingsSectionHeader(text: String) {
     Text(
         text = text,
         color = SoftIndigo,
-        fontSize = 11.sp,
-        fontWeight = FontWeight.Bold,
-        letterSpacing = 1.5.sp,
-        fontFamily = FontFamily.Monospace,
-        modifier = Modifier.padding(vertical = 16.dp)
+        style = MaterialTheme.typography.labelLarge.copy(
+            fontWeight = FontWeight.Bold,
+            fontSize = 14.sp
+        ),
+        modifier = Modifier.padding(bottom = 12.dp)
     )
 }
 
@@ -194,8 +178,8 @@ private fun SwitchPreference(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(title, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-            Text(subtitle, color = MutedGray, fontSize = 13.sp, lineHeight = 18.sp)
+            Text(title, color = Color.White, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold))
+            Text(subtitle, color = MutedGray, style = MaterialTheme.typography.bodySmall)
         }
         Switch(
             checked = checked,
@@ -219,7 +203,7 @@ private fun StrictnessSelector(
         modifier = Modifier
             .fillMaxWidth()
             .height(64.dp)
-            .background(Color(0xFF0A0A0A), RoundedCornerShape(12.dp)),
+            .background(Color(0xFF0A0A0A), RoundedCornerShape(16.dp)),
         verticalAlignment = Alignment.CenterVertically
     ) {
         StrictnessOption(
@@ -259,14 +243,14 @@ private fun StrictnessOption(
             .fillMaxHeight()
             .background(
                 if (isSelected) SoftIndigo.copy(alpha = 0.15f) else Color.Transparent,
-                RoundedCornerShape(12.dp)
+                RoundedCornerShape(16.dp)
             )
             .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(title, color = if (isSelected) SoftIndigo else Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-            Text(subtitle, color = if (isSelected) SoftIndigo.copy(0.7f) else MutedGray, fontSize = 10.sp)
+            Text(title, color = if (isSelected) SoftIndigo else Color.White, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold))
+            Text(subtitle, color = if (isSelected) SoftIndigo.copy(0.7f) else MutedGray, style = MaterialTheme.typography.labelSmall)
         }
     }
 }

@@ -86,7 +86,7 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
         if (state.sessionState == SessionState.FINISHED) {
             val now = LocalDateTime.now()
             val formatter = DateTimeFormatter.ofPattern("HH:mm")
-            "TODAY • ${now.format(formatter)}"
+            "Today • ${now.format(formatter)}"
         } else ""
     }
 
@@ -125,12 +125,10 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
             ) {
                 Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 20.dp)) {
                     Text(
-                        text = "CURRENT MISSION",
-                        color = MutedGray.copy(alpha = 0.8f),
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 3.sp,
-                            fontFamily = FontFamily.Monospace
+                        text = "Current mission",
+                        color = SoftIndigo.copy(alpha = 0.8f),
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            fontWeight = FontWeight.Bold
                         )
                     )
                     Spacer(modifier = Modifier.height(12.dp))
@@ -142,7 +140,6 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                         textStyle = TextStyle(
                             color = Color.White,
                             fontSize = 18.sp,
-                            fontFamily = FontFamily.Monospace,
                             fontWeight = FontWeight.Medium
                         ),
                         cursorBrush = SolidColor(SoftIndigo),
@@ -150,9 +147,9 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                         decorationBox = { innerTextField ->
                             if (state.missionText.isEmpty()) {
                                 Text(
-                                    text = "What are you focusing on right now?",
+                                    text = "What are you focusing on?",
                                     color = OffWhite.copy(0.2f),
-                                    style = MaterialTheme.typography.labelLarge
+                                    style = MaterialTheme.typography.bodyLarge
                                 )
                             }
                             innerTextField()
@@ -164,14 +161,14 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
             Spacer(Modifier.height(32.dp))
 
             val statusText = when {
-                state.isPausedByCall -> "CALL DETECTED — PAUSED"
-                state.isIntegrityCompromised -> "INTEGRITY COMPROMISED: RECOVERING"
-                state.sessionState == SessionState.IDLE -> "SYSTEM STATUS: READY"
-                state.sessionState == SessionState.RUNNING -> "DEEP FOCUS ACTIVE"
-                state.sessionState == SessionState.PAUSED -> "BIO-BREAK ACTIVE"
-                state.sessionState == SessionState.FINISHED -> "SESSION COMPLETE"
-                state.sessionState == SessionState.ABANDONED -> "SESSION ABANDONED"
-                else -> "SYSTEM STATUS: READY"
+                state.isPausedByCall -> "Call detected — Paused"
+                state.isIntegrityCompromised -> "Integrity compromised"
+                state.sessionState == SessionState.IDLE -> "System status: Ready"
+                state.sessionState == SessionState.RUNNING -> "Deep focus active"
+                state.sessionState == SessionState.PAUSED -> "Bio-break active"
+                state.sessionState == SessionState.FINISHED -> "Session complete"
+                state.sessionState == SessionState.ABANDONED -> "Session abandoned"
+                else -> "System status: Ready"
             }
 
             val statusColor = when {
@@ -197,7 +194,7 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                     Text(
                         text = targetText,
                         color = statusColor,
-                        style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace, letterSpacing = 2.sp)
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium)
                     )
                 }
             }
@@ -222,10 +219,8 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                         
                         val tickProgress = i / 60f
                         
-                        // Decide tick color
                         val color = when {
                             debtProgress > 0f -> {
-                                // Draw debt ticks counter-clockwise from the top
                                 val reverseTickProgress = (60 - i) % 60 / 60f
                                 if (reverseTickProgress <= debtProgress && i != 0) penaltyRed.copy(0.6f) 
                                 else MutedGray.copy(0.1f)
@@ -253,7 +248,6 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                     val arcTopLeft = Offset(arcStrokeWidth / 2, arcStrokeWidth / 2)
 
                     if (debtProgress > 0f) {
-                        // Draw Red Debt Arc Counter-Clockwise
                         drawArc(
                             color = penaltyRed,
                             startAngle = -90f,
@@ -264,7 +258,6 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                             topLeft = arcTopLeft
                         )
                     } else if (progress > 0f) {
-                        // Draw Normal Progress Arc Clockwise
                         drawArc(
                             color = SoftIndigo,
                             startAngle = -90f,
@@ -278,7 +271,7 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(text = displayTime, style = TextStyle(color = if (state.isIntegrityCompromised) penaltyRed else Color.White, fontSize = if (state.selectedDurationMinutes >= 60) 40.sp else 48.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace))
-                    Text(text = "REMAINING", color = MutedGray.copy(alpha = 0.4f), style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace, letterSpacing = 4.sp, fontSize = 10.sp))
+                    Text(text = "Remaining", color = MutedGray.copy(alpha = 0.4f), style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium))
                 }
             }
             
@@ -291,10 +284,10 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                     modifier = Modifier.padding(top = 16.dp)
                 ) {
                     Text(
-                        text = "+${formatTime(state.lastPenaltySeconds.toLong())} DEBT ADDED",
+                        text = "+${formatTime(state.lastPenaltySeconds.toLong())} debt added",
                         color = penaltyRed,
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
                     )
                 }
             }
@@ -318,7 +311,7 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                             color = if (isSelected) SoftIndigo.copy(0.12f) else Color.Transparent
                         ) {
                             Box(contentAlignment = Alignment.Center) {
-                                Text(text = chipText, color = if (isSelected) SoftIndigo else MutedGray.copy(0.6f), style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal, letterSpacing = 1.sp))
+                                Text(text = chipText, color = if (isSelected) SoftIndigo else MutedGray.copy(0.6f), style = MaterialTheme.typography.bodySmall.copy(fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal))
                             }
                         }
                     }
@@ -329,10 +322,10 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
 
             val isIntentClear = isHolding && pressingProgress > 0.03f
             val buttonText = when (state.sessionState) {
-                SessionState.IDLE -> "INITIATE FOCUS SESSION"
-                SessionState.RUNNING -> if (pressingProgress > 0.15f) "HOLD TO ABANDON..." else "PAUSE SESSION"
-                SessionState.PAUSED -> if (pressingProgress > 0.15f) "HOLD TO ABANDON..." else "RESUME SESSION"
-                SessionState.FINISHED, SessionState.ABANDONED -> "INITIATE FOCUS SESSION"
+                SessionState.IDLE -> "Initiate focus session"
+                SessionState.RUNNING -> if (pressingProgress > 0.15f) "Hold to abandon..." else "Pause session"
+                SessionState.PAUSED -> if (pressingProgress > 0.15f) "Hold to abandon..." else "Resume session"
+                SessionState.FINISHED, SessionState.ABANDONED -> "Initiate focus session"
             }
 
             val syncedButtonColor by animateColorAsState(targetValue = if (isIntentClear) Color(0xFF2A2A2A) else SoftIndigo, animationSpec = tween(150), label = "ButtonColor")
@@ -380,7 +373,7 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                         }
                         if (isIntentClear) Box(modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth(pressingProgress).height(2.dp).background(Color.White))
                         AnimatedContent(targetState = buttonText, transitionSpec = { slideInVertically(animationSpec = tween(600)) { height -> height } + fadeIn(animationSpec = tween(600)) togetherWith slideOutVertically(animationSpec = tween(600)) { height -> -height } + fadeOut(animationSpec = tween(600)) }, label = "ButtonTextTransition") { targetText ->
-                            Text(text = targetText, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace), color = if (isIntentClear) abandonColor else OffWhite)
+                            Text(text = targetText, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = if (isIntentClear) abandonColor else OffWhite)
                         }
                     }
                 }
@@ -389,7 +382,7 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(top = 20.dp)) {
                         Box(modifier = Modifier.width(40.dp).height(1.dp).background(MutedGray.copy(0.2f)))
                         Spacer(Modifier.height(20.dp))
-                        Text(text = "ABANDON SESSION", color = abandonColor, style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace, letterSpacing = 3.sp), modifier = Modifier.clickable { viewModel.abandonSession() }.padding(8.dp))
+                        Text(text = "Abandon session", color = abandonColor, style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium), modifier = Modifier.clickable { viewModel.abandonSession() }.padding(8.dp))
                     }
                 }
             }
@@ -419,16 +412,16 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
     if (state.sessionState == SessionState.PAUSED && !state.isBreakAllowanceSet) {
         ModalBottomSheet(onDismissRequest = { viewModel.resumeSession() }, containerColor = Color(0xFF1A1A1A), scrimColor = Color.Black.copy(alpha = 0.6f), shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)) {
             Column(modifier = Modifier.fillMaxWidth().padding(24.dp).padding(bottom = 32.dp)) {
-                Text("BREAK ALLOWANCE", color = MutedGray, fontFamily = FontFamily.Monospace, letterSpacing = 2.sp)
-                Text("Choose total break time for this mission.", color = Color.White.copy(0.6f), fontSize = 12.sp)
+                Text("Break allowance", color = SoftIndigo, style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
+                Text("Choose total break time for this mission.", color = Color.White.copy(0.6f), style = MaterialTheme.typography.bodySmall)
                 Spacer(Modifier.height(24.dp))
                 listOf(5 to "Standard", 10 to "Relaxed", 0 to "Monk Mode (No Breaks)").forEach { (mins, label) ->
                     Row(modifier = Modifier.fillMaxWidth().clickable { viewModel.setBreakAllowance(mins) }.padding(vertical = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                         Text(if (mins == 0) "🔒" else "⏳", fontSize = 20.sp)
                         Spacer(Modifier.width(16.dp))
                         Column {
-                            Text(label, color = Color.White, fontWeight = FontWeight.Bold)
-                            if (mins > 0) Text("$mins minutes total bank", color = MutedGray, fontSize = 12.sp)
+                            Text(label, color = Color.White, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold))
+                            if (mins > 0) Text("$mins minutes total bank", color = MutedGray, style = MaterialTheme.typography.bodySmall)
                         }
                     }
                 }
@@ -441,13 +434,13 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
         ModalBottomSheet(onDismissRequest = { showCustomSheet = false }, containerColor = Color(0xFF1A1A1A), scrimColor = Color.Black.copy(alpha = 0.6f), shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)) {
             Column(modifier = Modifier.fillMaxWidth().padding(24.dp).padding(bottom = 32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("CUSTOM DURATION", color = MutedGray, style = MaterialTheme.typography.labelMedium.copy(fontFamily = FontFamily.Monospace, letterSpacing = 2.sp))
+                    Text("Custom duration", color = SoftIndigo, style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
                     IconButton(onClick = { showCustomSheet = false }) { Icon(Icons.Default.Close, "Close", tint = Color.White.copy(0.5f)) }
                 }
                 Spacer(modifier = Modifier.height(48.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(onClick = { if (customPickerValue > 5) customPickerValue -= 5 }, modifier = Modifier.size(64.dp)) {
-                        Text("-", color = Color.White, fontSize = 32.sp, fontFamily = FontFamily.Monospace)
+                        Text("-", color = Color.White, fontSize = 32.sp)
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 32.dp)) {
                         if (customPickerValue >= 60) {
@@ -457,7 +450,6 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                                 text = if (mins > 0) "${hours}H ${mins}M" else "${hours}H",
                                 color = SoftIndigo,
                                 style = MaterialTheme.typography.labelSmall.copy(
-                                    fontFamily = FontFamily.Monospace,
                                     fontWeight = FontWeight.Bold,
                                     letterSpacing = 1.sp
                                 ),
@@ -465,15 +457,15 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                             )
                         }
                         Text("$customPickerValue", style = TextStyle(color = Color.White, fontSize = 64.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace))
-                        Text("MIN", color = MutedGray.copy(0.9f), style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace))
+                        Text("Min", color = MutedGray.copy(0.9f), style = MaterialTheme.typography.labelSmall)
                     }
                     IconButton(onClick = { if (customPickerValue < 480) customPickerValue += 5 }, modifier = Modifier.size(64.dp)) {
-                        Text("+", color = Color.White, fontSize = 32.sp, fontFamily = FontFamily.Monospace)
+                        Text("+", color = Color.White, fontSize = 32.sp)
                     }
                 }
                 Spacer(modifier = Modifier.height(64.dp))
                 Button(onClick = { viewModel.setDuration(customPickerValue); showCustomSheet = false }, modifier = Modifier.fillMaxWidth().height(64.dp), shape = RoundedCornerShape(16.dp), colors = ButtonDefaults.buttonColors(containerColor = SoftIndigo)) {
-                    Text("SET DURATION", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace), color = OffWhite)
+                    Text("Set duration", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = OffWhite)
                 }
             }
         }

@@ -55,4 +55,7 @@ interface FocusSessionDao {
 
     @Delete
     suspend fun deleteSession(session: FocusSession)
+
+    @Query("DELETE FROM focus_sessions")
+    suspend fun deleteAllSessions()
 }

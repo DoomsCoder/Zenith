@@ -4,17 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -24,29 +14,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeFloatingActionButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -71,7 +40,6 @@ fun WhitelistManagerScreen(
     var isSelectingApps by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
 
-    // Handle mobile back gesture correctly
     BackHandler(enabled = isSelectingApps) {
         isSelectingApps = false
     }
@@ -88,10 +56,9 @@ fun WhitelistManagerScreen(
             TopAppBar(
                 title = {
                     Text(
-                        if (isSelectingApps) "Install Modules" else "Whitelist Manager",
+                        if (isSelectingApps) "Install modules" else "Whitelist manager",
                         color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                     )
                 },
                 navigationIcon = {
@@ -106,7 +73,7 @@ fun WhitelistManagerScreen(
         },
         floatingActionButton = {
             if (!isSelectingApps) {
-                LargeFloatingActionButton(
+                FloatingActionButton(
                     onClick = { isSelectingApps = true },
                     containerColor = SoftIndigo,
                     contentColor = Color.White,
@@ -116,7 +83,7 @@ fun WhitelistManagerScreen(
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = "Add App",
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.size(24.dp)
                     )
                 }
             }
@@ -127,17 +94,15 @@ fun WhitelistManagerScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 20.dp)
         ) {
             Text(
                 "Whitelisted modules are safe zones. Using them will not freeze your timer or trigger penalties.",
                 color = MutedGray,
-                fontSize = 12.sp,
-                lineHeight = 16.sp,
+                style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            // Search Bar
             TextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
@@ -175,7 +140,7 @@ fun WhitelistManagerScreen(
                     Text(
                         if (isSelectingApps) "No modules found." else "No modules whitelisted.",
                         color = MutedGray,
-                        fontFamily = FontFamily.Monospace
+                        style = MaterialTheme.typography.bodyMedium
                     )
                 }
             } else {
@@ -220,8 +185,8 @@ fun AppRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(Modifier.weight(1f)) {
-            Text(name, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-            Text(packageName, color = MutedGray, fontSize = 11.sp, fontFamily = FontFamily.Monospace)
+            Text(name, color = Color.White, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold))
+            Text(packageName, color = MutedGray, style = MaterialTheme.typography.bodySmall)
         }
         Checkbox(
             checked = isSelected,
