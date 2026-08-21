@@ -30,13 +30,14 @@ fun RoastSettingsScreen(
     var showIntensitySheet by remember { mutableStateOf(false) }
 
     Scaffold(
+        modifier = Modifier.statusBarsPadding(),
         topBar = {
             TopAppBar(
                 title = { 
                     Text(
                         "Notifications & Roasts", 
                         color = Color.White, 
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
                     ) 
                 },
                 navigationIcon = {
@@ -44,10 +45,10 @@ fun RoastSettingsScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF121212))
             )
         },
-        containerColor = Color.Black
+        containerColor = Color(0xFF121212)
     ) { innerPadding ->
         prefs?.let { p ->
             Column(

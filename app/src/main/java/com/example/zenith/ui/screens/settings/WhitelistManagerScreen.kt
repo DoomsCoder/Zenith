@@ -52,13 +52,14 @@ fun WhitelistManagerScreen(
     }
 
     Scaffold(
+        modifier = Modifier.statusBarsPadding(),
         topBar = {
             TopAppBar(
                 title = {
                     Text(
                         if (isSelectingApps) "Install modules" else "Whitelist manager",
                         color = Color.White,
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
                     )
                 },
                 navigationIcon = {
@@ -68,7 +69,7 @@ fun WhitelistManagerScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF121212))
             )
         },
         floatingActionButton = {
@@ -88,7 +89,7 @@ fun WhitelistManagerScreen(
                 }
             }
         },
-        containerColor = Color.Black
+        containerColor = Color(0xFF121212)
     ) { innerPadding ->
         Column(
             modifier = Modifier

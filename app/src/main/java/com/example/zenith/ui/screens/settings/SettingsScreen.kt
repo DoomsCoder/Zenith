@@ -52,7 +52,7 @@ fun SettingsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(Color(0xFF121212))
             .pointerInput(Unit) {
                 detectTapGestures(onTap = { focusManager.clearFocus() })
             }
@@ -133,7 +133,7 @@ private fun SettingsHeader(
                 text = "Settings",
                 style = MaterialTheme.typography.headlineMedium.copy(
                     color = Color.White,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.SemiBold
                 )
             )
         }
@@ -192,7 +192,7 @@ private fun SettingsRow(
             Text(
                 text = category.title,
                 color = Color.White,
-                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold)
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium)
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(

@@ -114,7 +114,7 @@ private fun RecentSessionRow(session: SessionHistoryItem) {
             Spacer(Modifier.width(8.dp))
 
             val statusIcon = if (session.isCompleted) Icons.Rounded.Check else Icons.Rounded.Close
-            val statusColor = if (session.isCompleted) SoftIndigo else Color.DarkGray
+            val statusColor = if (session.isCompleted) Color(0xFF4CAF50) else Color(0xFFEF5350)
 
             Icon(
                 imageVector = statusIcon,
