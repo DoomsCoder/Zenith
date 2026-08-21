@@ -6,33 +6,14 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Adjust
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,14 +26,12 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.zenith.ui.theme.MutedGray
 import com.example.zenith.ui.theme.OffWhite
 import com.example.zenith.ui.theme.SoftIndigo
 import kotlinx.parcelize.Parcelize
-
 
 @Composable
 fun TodayMissionLogSection(
@@ -89,13 +68,12 @@ fun TodayMissionLogSection(
         if (sessions.isEmpty()) {
             EmptyStateCard(onStartSessionClick)
         } else {
-            sessions.forEach { sessions ->
+            sessions.forEach { session ->
                 ExpandableSessionCard(
-                    session = sessions,
-                    isExpanded = expandedSessionId == sessions.id,
+                    session = session,
+                    isExpanded = expandedSessionId == session.id,
                     onToggle = {
-                        expandedSessionId =
-                            if (expandedSessionId == sessions.id) null else sessions.id
+                        expandedSessionId = if (expandedSessionId == session.id) null else session.id
                     }
                 )
                 Spacer(modifier = Modifier.height(12.dp))
@@ -119,9 +97,7 @@ fun ExpandableSessionCard(
                 indication = null
             ) { onToggle() },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White.copy(0.03f)
-        ),
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(0.03f)),
         border = BorderStroke(1.dp, Color.White.copy(0.05f))
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
@@ -155,21 +131,22 @@ fun ExpandableSessionCard(
                 )
             }
 
-            val statusText = if (session.isCompleted) "Completed" else "Abandoned"
-            val statusColor = if (session.isCompleted) SoftIndigo else Color(0xFFEF5350).copy(0.7f)
-
             if (isExpanded) {
+                val successGreen = Color(0xFF4CAF50)
+                val errorRed = Color(0xFFEF5350)
+                
+                val statusText = if (session.isCompleted) "Completed" else "Abandoned"
+                val statusColor = if (session.isCompleted) successGreen else errorRed
+
                 Spacer(modifier = Modifier.height(16.dp))
                 HorizontalDivider(color = Color.White.copy(0.05f))
                 Spacer(modifier = Modifier.height(16.dp))
+                
                 TelemetryRow("Mission name", session.title)
                 TelemetryRow("Date & time", session.dataTimeStr)
                 TelemetryRow("Planned duration", "${session.plannedMinutes} min")
                 TelemetryRow("Actual duration", "${session.durationMinutes} min")
-                TelemetryRow(
-                    "Status", value = statusText,
-                    valueColor = statusColor
-                )
+                TelemetryRow("Status", value = statusText, valueColor = statusColor)
 
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
@@ -183,20 +160,14 @@ fun ExpandableSessionCard(
                 HorizontalDivider(color = Color.White.copy(0.05f))
                 Spacer(modifier = Modifier.height(16.dp))
 
-                TelemetryRow(
-                    "Phone pickups",
-                    session.pickups.toString(),
-                    getTelemetryColor(session.pickups)
-                )
-                TelemetryRow(
-                    "App switches",
-                    session.appSwitches.toString(),
-                    getTelemetryColor(session.appSwitches)
-                )
+                TelemetryRow("Phone pickups", session.pickups.toString(), getTelemetryColor(session.pickups))
+                TelemetryRow("App switches", session.appSwitches.toString(), getTelemetryColor(session.appSwitches))
+                
+                val impactColor = if (session.scoreImpact >= 0) successGreen else errorRed
                 TelemetryRow(
                     "Focus score impact",
                     "${if (session.scoreImpact >= 0) "+" else ""}${session.scoreImpact} pts",
-                    if (session.scoreImpact >= 0) Color(0xFF4CAF50) else Color(0xFFEF5350)
+                    impactColor
                 )
             }
         }
@@ -206,18 +177,14 @@ fun ExpandableSessionCard(
 @Composable
 fun TelemetryRow(label: String, value: String, valueColor: Color = Color.White) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.Top
     ) {
         Text(
             text = label,
             modifier = Modifier.weight(0.5f),
-            style = MaterialTheme.typography.bodySmall.copy(
-                color = MutedGray
-            )
+            style = MaterialTheme.typography.bodySmall.copy(color = MutedGray)
         )
         Text(
             text = value,
@@ -234,22 +201,13 @@ fun TelemetryRow(label: String, value: String, valueColor: Color = Color.White) 
 @Composable
 fun EmptyStateCard(onStartSessionClick: () -> Unit) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.Transparent
-        ),
-        border = BorderStroke(
-            1.dp,
-            color = Color.White.copy(0.06f)
-        )
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        border = BorderStroke(1.dp, color = Color.White.copy(0.06f))
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 48.dp, horizontal = 32.dp),
+            modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp, horizontal = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Surface(
@@ -259,12 +217,7 @@ fun EmptyStateCard(onStartSessionClick: () -> Unit) {
                 border = BorderStroke(1.dp, Color.White.copy(0.05f))
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        Icons.Default.Adjust,
-                        null,
-                        tint = MutedGray.copy(alpha = 0.2f),
-                        modifier = Modifier.size(32.dp)
-                    )
+                    Icon(Icons.Default.Adjust, null, tint = MutedGray.copy(alpha = 0.2f), modifier = Modifier.size(32.dp))
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))

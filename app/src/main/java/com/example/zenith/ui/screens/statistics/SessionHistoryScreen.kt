@@ -17,18 +17,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -37,7 +26,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -110,8 +98,8 @@ fun SessionHistoryScreen(
             Text(
                 text = "Session history",
                 style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    fontWeight = FontWeight.SemiBold,
+                    color = SoftIndigo // Consistent Header Color
                 )
             )
         }
@@ -335,11 +323,14 @@ private fun SessionHistoryCard(
     var isExpanded by remember {mutableStateOf(false)}
     val scale by animateFloatAsState(if (isSelected) 1.02f else 1f, label = "scale")
 
+    val successGreen = Color(0xFF4CAF50)
+    val errorRed = Color(0xFFEF5350)
+
     val getTelemetryColor = { count: Int ->
         when (count) {
-            0 -> Color(0xFF4CAF50)
+            0 -> successGreen
             in 1..2 -> Color(0xFFFFA726)
-            else -> Color(0xFFEF5350)
+            else -> errorRed
         }
     }
 
@@ -388,7 +379,7 @@ private fun SessionHistoryCard(
                 Spacer(Modifier.height(10.dp))
 
                 val statusText = if (item.isCompleted) "Completed" else "Abandoned"
-                val statusColor = if (item.isCompleted) SoftIndigo else Color.Gray
+                val statusColor = if (item.isCompleted) successGreen else errorRed
                 HistoryMetricRow(
                     label = "Status",
                     value = statusText,
@@ -432,7 +423,7 @@ private fun SessionHistoryCard(
                         Spacer(Modifier.height(10.dp))
 
                         val prefix = if (item.scoreImpact >= 0) "+" else ""
-                        val impactColor = if (item.scoreImpact >= 0) SoftIndigo else Color(0xFFEF4444)
+                        val impactColor = if (item.scoreImpact >= 0) successGreen else errorRed
                         HistoryMetricRow(
                             label = "Focus score impact",
                             value = "$prefix${item.scoreImpact} pts",

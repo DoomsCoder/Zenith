@@ -281,12 +281,12 @@ fun FocusScoreSection(
             }
             if (expanded) {
                 Spacer(Modifier.height(24.dp))
-                TelemetryRow("Sessions completed", "+${breakdown.completionPoints} pts", valueColor = SoftIndigo)
-                TelemetryRow("Focus minutes", "+${breakdown.focusMinutePoints} pts", valueColor = SoftIndigo)
+                TelemetryRow("Sessions completed", "+${breakdown.completionPoints} pts", valueColor = Color(0xFF4CAF50))
+                TelemetryRow("Focus minutes", "+${breakdown.focusMinutePoints} pts", valueColor = Color(0xFF4CAF50))
                 TelemetryRow("Abandonments", "-${breakdown.abandonmentPenalty} pts", valueColor = Color(0xFFEF5350))
                 TelemetryRow("Pickups detected", "-${breakdown.pickupPenalty} pts", valueColor = Color(0xFFEF5350))
                 TelemetryRow("App switches", "-${breakdown.appSwitchPenalty} pts", valueColor = Color(0xFFEF5350))
-                TelemetryRow("Streak bonus", "+${breakdown.streakBonus} pts", valueColor = SoftIndigo)
+                TelemetryRow("Streak bonus", "+${breakdown.streakBonus} pts", valueColor = Color(0xFF4CAF50))
                 Spacer(Modifier.height(16.dp))
                 HorizontalDivider(color = Color.White.copy(0.05f))
                 Spacer(Modifier.height(16.dp))

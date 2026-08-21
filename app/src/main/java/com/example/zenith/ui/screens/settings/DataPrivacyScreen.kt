@@ -44,6 +44,7 @@ fun DataPrivacyScreen(
     var showConfirmAction by remember { mutableStateOf<DataAction?>(null) }
 
     Scaffold(
+        modifier = Modifier.statusBarsPadding(),
         topBar = {
             TopAppBar(
                 title = { 
@@ -51,7 +52,7 @@ fun DataPrivacyScreen(
                         "Data & Privacy", 
                         color = Color.White, 
                         style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.SemiBold
                         )
                     ) 
                 },
@@ -60,10 +61,10 @@ fun DataPrivacyScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF121212))
             )
         },
-        containerColor = Color.Black
+        containerColor = Color(0xFF121212)
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -174,7 +175,7 @@ private fun TelemetryDashboard(sessions: Int, distractions: Int) {
             Box(Modifier.width(1.dp).height(40.dp).background(Color.White.copy(0.05f)).align(Alignment.CenterVertically))
             Column(horizontalAlignment = Alignment.End) {
                 Text("Status", color = MutedGray, style = MaterialTheme.typography.labelSmall)
-                Text("SECURE", color = Color(0xFF81C784), style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold), modifier = Modifier.padding(top = 8.dp))
+                Text("SECURE", color = Color(0xFF4CAF50), style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold), modifier = Modifier.padding(top = 8.dp))
             }
         }
     }
