@@ -46,6 +46,7 @@ import com.example.zenith.ui.theme.OffWhite
 import com.example.zenith.ui.theme.SoftIndigo
 import com.example.zenith.ui.theme.ZenithTheme
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.font.FontStyle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,27 +59,26 @@ fun ZenithTopAppBar(
 
     TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.Transparent,
+            containerColor = Color(0xFF121212),
             titleContentColor = Color.White
         ),
         title = {
             Column(modifier = Modifier.padding(start = 8.dp)) {
                 Text(
-                    text = "ZENITH",
+                    text = "Zenith",
                     color = SoftIndigo,
-                    style = MaterialTheme.typography.labelLarge.copy(
+                    style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold,
-                        letterSpacing = 6.sp,
-                        fontFamily = FontFamily.Monospace
+                        fontStyle = FontStyle.Italic,
+                        letterSpacing = 0.2.sp
                     )
                 )
                 Text(
-                    text = "FOCUS ENGINE",
-                    color = MutedGray.copy(alpha = 0.7f),
+                    text = "Focus engine",
+                    color = MutedGray.copy(alpha = 0.9f),
                     style = MaterialTheme.typography.labelSmall.copy(
-                        letterSpacing = 3.sp,
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 10.sp
+                        letterSpacing = 0.2.sp,
+                        fontSize = 11.sp
                     )
                 )
             }

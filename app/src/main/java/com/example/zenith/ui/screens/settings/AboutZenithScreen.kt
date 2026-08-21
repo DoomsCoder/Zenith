@@ -41,18 +41,19 @@ fun AboutZenithScreen(
     var showChangelog by remember { mutableStateOf(false) }
 
     Scaffold(
+        modifier = Modifier.statusBarsPadding(),
         topBar = {
             TopAppBar(
-                title = { Text("About", color = Color.White, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)) },
+                title = { Text("About", color = Color.White, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF121212))
             )
         },
-        containerColor = Color.Black
+        containerColor = Color(0xFF121212)
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -64,27 +65,31 @@ fun AboutZenithScreen(
         ) {
             Spacer(Modifier.height(32.dp))
 
-            // App Icon
-            Surface(
-                modifier = Modifier.size(80.dp),
-                shape = RoundedCornerShape(20.dp),
-                color = Color(0xFF1A1A1A)
+            // App Icon with background
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(RoundedCornerShape(20.dp)),
+                contentAlignment = Alignment.Center
             ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                        contentDescription = "Zenith Icon",
-                        modifier = Modifier.size(64.dp)
-                    )
-                }
+                Image(
+                    painter = painterResource(id = R.drawable.ic_launcher_background),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize()
+                )
+                Image(
+                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                    contentDescription = "Zenith Icon",
+                    modifier = Modifier.size(64.dp)
+                )
             }
 
             Spacer(Modifier.height(16.dp))
 
             Text(
-                "Zenith Focus Engine",
+                "Zenith",
                 color = Color.White,
-                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.SemiBold)
             )
             
             Text(
