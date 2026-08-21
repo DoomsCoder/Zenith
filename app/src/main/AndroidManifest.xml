@@ -45,7 +45,7 @@
             android:resizeableActivity="false"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Zenith"
+            android:theme="@style/Theme.Zenith.Starting"
             tools:ignore="NonResizeableActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
