@@ -28,6 +28,9 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Coffee
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -128,7 +131,7 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                         text = "Current mission",
                         color = SoftIndigo.copy(alpha = 0.8f),
                         style = MaterialTheme.typography.labelLarge.copy(
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.SemiBold
                         )
                     )
                     Spacer(modifier = Modifier.height(12.dp))
@@ -410,18 +413,57 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
 
     // Dynamic Break Allowance Sheet
     if (state.sessionState == SessionState.PAUSED && !state.isBreakAllowanceSet) {
-        ModalBottomSheet(onDismissRequest = { viewModel.resumeSession() }, containerColor = Color(0xFF1A1A1A), scrimColor = Color.Black.copy(alpha = 0.6f), shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)) {
-            Column(modifier = Modifier.fillMaxWidth().padding(24.dp).padding(bottom = 32.dp)) {
-                Text("Break allowance", color = SoftIndigo, style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
-                Text("Choose total break time for this mission.", color = Color.White.copy(0.6f), style = MaterialTheme.typography.bodySmall)
+        val missionMins = state.selectedDurationMinutes
+        val standardMins = (missionMins * 0.1).toInt().coerceAtLeast(2)
+        val relaxedMins = (missionMins * 0.2).toInt().coerceAtLeast(5)
+
+        ModalBottomSheet(
+            onDismissRequest = { viewModel.resumeSession() },
+            containerColor = Color(0xFF1A1A1A),
+            scrimColor = Color.Black.copy(alpha = 0.6f),
+            shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
+        ) {
+            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(bottom = 40.dp)) {
+                Text(
+                    "Break allowance", 
+                    color = SoftIndigo, 
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
+                )
+                Text(
+                    "Choose total break time for this mission.", 
+                    color = Color.White.copy(0.6f), 
+                    style = MaterialTheme.typography.bodyMedium
+                )
                 Spacer(Modifier.height(24.dp))
-                listOf(5 to "Standard", 10 to "Relaxed", 0 to "Monk Mode (No Breaks)").forEach { (mins, label) ->
-                    Row(modifier = Modifier.fillMaxWidth().clickable { viewModel.setBreakAllowance(mins) }.padding(vertical = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text(if (mins == 0) "🔒" else "⏳", fontSize = 20.sp)
+                
+                listOf(
+                    Triple(standardMins, "Standard", Icons.Default.Timer),
+                    Triple(relaxedMins, "Relaxed", Icons.Default.Coffee),
+                    Triple(0, "Monk mode", Icons.Default.Lock)
+                ).forEach { (mins, label, icon) ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { viewModel.setBreakAllowance(mins) }
+                            .padding(vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            modifier = Modifier.size(40.dp),
+                            shape = RoundedCornerShape(10.dp),
+                            color = Color.White.copy(0.05f)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(icon, null, tint = SoftIndigo, modifier = Modifier.size(20.dp))
+                            }
+                        }
                         Spacer(Modifier.width(16.dp))
                         Column {
-                            Text(label, color = Color.White, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold))
-                            if (mins > 0) Text("$mins minutes total bank", color = MutedGray, style = MaterialTheme.typography.bodySmall)
+                            val titleText = if (mins == 0) "$label (No breaks)" else label
+                            Text(titleText, color = Color.White, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium))
+                            if (mins > 0) {
+                                Text("$mins minutes total bank", color = MutedGray, style = MaterialTheme.typography.bodySmall)
+                            }
                         }
                     }
                 }
