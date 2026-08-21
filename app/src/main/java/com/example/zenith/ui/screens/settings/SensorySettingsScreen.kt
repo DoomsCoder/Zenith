@@ -55,7 +55,7 @@ fun SensorySettingsScreen(
                     Text(
                         "Sensory Punishment", 
                         color = Color.White, 
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Medium)
                     ) 
                 },
                 navigationIcon = {

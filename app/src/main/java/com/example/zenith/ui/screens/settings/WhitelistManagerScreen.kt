@@ -2,7 +2,9 @@ package com.example.zenith.ui.screens.settings
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -59,7 +61,7 @@ fun WhitelistManagerScreen(
                     Text(
                         if (isSelectingApps) "Install modules" else "Whitelist manager",
                         color = Color.White,
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Medium)
                     )
                 },
                 navigationIcon = {
@@ -109,7 +111,11 @@ fun WhitelistManagerScreen(
                 onValueChange = { searchQuery = it },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 16.dp),
+                    .padding(vertical = 16.dp)
+                    .border(
+                        BorderStroke(1.dp, Color.White.copy(alpha = 0.08f)),
+                        RoundedCornerShape(12.dp)
+                    ),
                 placeholder = { Text("Search apps...", color = MutedGray.copy(0.5f)) },
                 leadingIcon = { Icon(Icons.Outlined.Search, null, tint = MutedGray) },
                 trailingIcon = {

@@ -52,7 +52,7 @@ fun DataPrivacyScreen(
                         "Data & Privacy", 
                         color = Color.White, 
                         style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.Medium
                         )
                     ) 
                 },

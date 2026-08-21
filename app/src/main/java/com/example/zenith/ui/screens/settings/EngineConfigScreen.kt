@@ -44,7 +44,7 @@ fun EngineConfigScreen(
                     Text(
                         "Engine Config",
                         color = Color.White,
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Medium)
                     )
                 },
                 navigationIcon = {

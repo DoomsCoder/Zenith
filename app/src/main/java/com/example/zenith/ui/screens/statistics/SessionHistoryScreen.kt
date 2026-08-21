@@ -98,7 +98,7 @@ fun SessionHistoryScreen(
             Text(
                 text = "Session history",
                 style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Medium,
                     color = SoftIndigo // Consistent Header Color
                 )
             )

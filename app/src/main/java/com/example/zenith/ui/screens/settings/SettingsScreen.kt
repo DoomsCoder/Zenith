@@ -1,7 +1,9 @@
 package com.example.zenith.ui.screens.settings
 
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -10,6 +12,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -133,7 +136,7 @@ private fun SettingsHeader(
                 text = "Settings",
                 style = MaterialTheme.typography.headlineMedium.copy(
                     color = Color.White,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.Medium
                 )
             )
         }
@@ -144,12 +147,23 @@ private fun SettingsHeader(
             onValueChange = onQueryChange,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(52.dp),
+                .height(52.dp)
+                .border(
+                    BorderStroke(1.dp, Color.White.copy(alpha = 0.08f)),
+                    RoundedCornerShape(12.dp)
+                ),
             placeholder = {
                 Text("Search settings...", color = MutedGray.copy(alpha = 0.5f), style = MaterialTheme.typography.bodyLarge)
             },
             leadingIcon = {
                 Icon(Icons.Outlined.Search, null, tint = MutedGray, modifier = Modifier.size(20.dp))
+            },
+            trailingIcon = {
+                if (query.isNotEmpty()) {
+                    IconButton(onClick = { onQueryChange("") }) {
+                        Icon(Icons.Default.Close, null, tint = MutedGray.copy(alpha = 0.5f), modifier = Modifier.size(20.dp))
+                    }
+                }
             },
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color(0xFF111111),

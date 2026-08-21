@@ -44,7 +44,7 @@ fun AboutZenithScreen(
         modifier = Modifier.statusBarsPadding(),
         topBar = {
             TopAppBar(
-                title = { Text("About", color = Color.White, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)) },
+                title = { Text("About", color = Color.White, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Medium)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = Color.White)

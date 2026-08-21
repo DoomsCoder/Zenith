@@ -37,7 +37,7 @@ fun RoastSettingsScreen(
                     Text(
                         "Notifications & Roasts", 
                         color = Color.White, 
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Medium)
                     ) 
                 },
                 navigationIcon = {
