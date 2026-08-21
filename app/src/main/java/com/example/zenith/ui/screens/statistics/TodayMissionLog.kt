@@ -52,7 +52,7 @@ fun TodayMissionLogSection(
             Text(
                 text = "Today's mission log",
                 style = MaterialTheme.typography.labelLarge.copy(
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.SemiBold,
                     color = SoftIndigo
                 )
             )
