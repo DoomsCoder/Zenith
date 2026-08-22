@@ -21,11 +21,9 @@ class FocusViewModel(
     savedState: SavedStateHandle
 ) : AndroidViewModel(application) {
 
-    // State Machine
     private val uiStateMachine: UiStateMachine<FocusViewState> =
         savedState.asUiStateMachine(FocusViewState())
 
-    // UI observes this property
     val uiState: StateFlow<FocusViewState> by uiStateMachine
 
     private var focusTimerJob: Job? = null
@@ -68,14 +66,12 @@ class FocusViewModel(
                 ) 
             }
             
-            // Limit penalty to 2x original mission
             val maxAllowedSeconds = FocusMath.calculateTimeDebt(uiState.value.selectedDurationMinutes * 60)
             
-            // Incremental surge animation
             repeat(seconds) {
                 if (uiState.value.remainingFocusSeconds < maxAllowedSeconds) {
                     uiStateMachine.update { copy(remainingFocusSeconds = remainingFocusSeconds + 1) }
-                    delay(10) // Rapid tick up
+                    delay(10)
                 }
             }
             

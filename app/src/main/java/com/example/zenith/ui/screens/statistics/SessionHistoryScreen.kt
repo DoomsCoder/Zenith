@@ -84,7 +84,7 @@ fun SessionHistoryScreen(
             .background(Color(0xFF121212))
     ) {
         Column(modifier = Modifier.background(Color(0xFF121212)).statusBarsPadding()) {
-            Spacer(Modifier.height(16.dp)) // Increased spacing
+            Spacer(Modifier.height(16.dp))
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

@@ -84,8 +84,6 @@ class FocusService : Service(), SensorEventListener {
 
     private val sessionScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-    // --- 1. RECEIVERS ---
-
     private val screenStartReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == Intent.ACTION_SCREEN_ON && !callGraceActive) {
@@ -114,8 +112,6 @@ class FocusService : Service(), SensorEventListener {
         const val ACTION_STOP = "ACTION_STOP"
         const val EXTRA_IS_FINISHED = "EXTRA_IS_FINISHED"
     }
-
-    // --- 2. LIFECYCLE ---
 
     override fun onCreate() {
         super.onCreate()
@@ -255,8 +251,6 @@ class FocusService : Service(), SensorEventListener {
         sessionScope.cancel()
     }
 
-    // --- 3. TELEMETRY & VIOLATIONS ---
-
     private suspend fun detectAppSwitches() {
         val now = System.currentTimeMillis()
         val events = usageStatsManager.queryEvents(lastCheckedTimestamp, now)
@@ -389,8 +383,6 @@ class FocusService : Service(), SensorEventListener {
         roastIntervalJob = null
     }
 
-    // --- 4. CALL SHIELD ---
-
     private fun activateCallShield() {
         if (!callGraceActive) {
             callGraceActive = true
@@ -449,8 +441,6 @@ class FocusService : Service(), SensorEventListener {
         }
         dndWasAppliedByZenith = false
     }
-
-    // --- 5. NOTIFICATIONS & FEEDBACK ---
 
     private fun updateNotification(title: String, message: String, isUrgent: Boolean = false) {
         // ROTATING CHANNEL: Bypasses Android's heads-up suppression

@@ -70,7 +70,6 @@ fun AboutZenithScreen(
         ) {
             Spacer(Modifier.height(32.dp))
 
-            // App Icon with background
             Box(
                 modifier = Modifier
                     .size(80.dp)
@@ -109,8 +108,6 @@ fun AboutZenithScreen(
                 style = MaterialTheme.typography.bodySmall
             )
 
-            Spacer(Modifier.height(40.dp))
-
             AboutSection(
                 title = "Mission",
                 description = "Zenith is a high-reliability focus enforcer designed to reclaim human attention through strict telemetry and aggressive accountability. Engineered for deep work."
@@ -128,7 +125,6 @@ fun AboutZenithScreen(
 
             Spacer(Modifier.height(32.dp))
 
-            // Action Links
             BlueActionLink("Rate Zenith") {
                 Toast.makeText(context, "Rating will be enabled upon public release.", Toast.LENGTH_SHORT).show()
             }

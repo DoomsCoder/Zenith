@@ -15,7 +15,6 @@ object SessionEventBus {
         _events.emit(event)
     }
 
-    // Prevents the same event from firing twice on screen rotation
     @OptIn(ExperimentalCoroutinesApi::class)
     fun clearLastEvent() {
         _events.resetReplayCache()
@@ -26,12 +25,8 @@ object SessionEventBus {
         object ResumeAfterCall : SessionEvent()
         object UserManualPause : SessionEvent()
         object UserManualResume : SessionEvent()
-        
-        // NEW: Penalty events for Time Debt system
         data class PenaltyApplied(val seconds: Int) : SessionEvent()
         object MissionExecuted : SessionEvent()
-        
-        // Progress Controls
         object PauseProgress : SessionEvent()
         object ResumeProgress : SessionEvent()
     }

@@ -278,7 +278,6 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                     Text(text = "Remaining", color = MutedGray.copy(alpha = 0.4f), style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium))
                 }
             }
-            
             // Debt Pill
             AnimatedVisibility(visible = state.isIntegrityCompromised) {
                 Surface(
@@ -298,7 +297,6 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
 
             Spacer(Modifier.height(32.dp))
 
-            // OG Preset Capsules Style
             Row(modifier = Modifier.fillMaxWidth().padding(top = 12.dp), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                 Row(modifier = Modifier.width(280.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     listOf("25m", "50m", "Custom").forEach { label ->
@@ -393,7 +391,6 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
             Spacer(modifier = Modifier.height(200.dp))
         }
         
-        // Red Flash Overlay
         AnimatedVisibility(
             visible = state.showPenaltyFlash,
             enter = fadeIn(tween(100)),

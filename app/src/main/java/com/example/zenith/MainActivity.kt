@@ -191,12 +191,11 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-        // Request notification permission (Standard popup)
+
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1)
         }
 
-        // Initial check: If they don't have it, send them to settings
         requestUsageStatsPermission()
     }
     @SuppressLint("ServiceCast")

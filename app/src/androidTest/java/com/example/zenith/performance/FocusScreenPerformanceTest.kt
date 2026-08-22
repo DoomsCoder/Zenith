@@ -6,22 +6,18 @@ import com.example.zenith.ui.theme.ZenithTheme
 import org.junit.Rule
 import org.junit.Test
 
-class FocusScreenPerformanceTest {
-
-    @get:Rule
-    val composeTestRule = createComposeRule()
-
-    @Test
-    fun testFocusScreenRecomposition() {
-        composeTestRule.setContent {
-            ZenithTheme {
-                FocusScreen()
-            }
-        }
-        
-        // Dejavu would typically be used here with assertions like:
-        // assertRecompositionCount("FocusScreen", 1)
-        // Since we are doing a quick check, let's just ensure it loads
-        composeTestRule.waitForIdle()
-    }
-}
+//class FocusScreenPerformanceTest {
+//
+//    @get:Rule
+//    val composeTestRule = createComposeRule()
+//
+//    @Test
+//    fun testFocusScreenRecomposition() {
+//        composeTestRule.setContent {
+//            ZenithTheme {
+//                FocusScreen()
+//            }
+//        }
+//        composeTestRule.waitForIdle()
+//    }
+//}

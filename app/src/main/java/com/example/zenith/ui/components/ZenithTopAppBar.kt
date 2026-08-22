@@ -119,7 +119,6 @@ fun ZenithTopAppBar(
                         shape = RoundedCornerShape(20.dp),
                         modifier = Modifier.background(Color(0xFF1A1A1A))
                     ) {
-                        // Item 1: Settings
                         DropdownMenuItem(
                             text = { Text("Settings", color = OffWhite.copy(0.8f), fontFamily = FontFamily.Monospace) },
                             leadingIcon = {Icon(Icons.Default.Settings, null, tint = OffWhite.copy(0.9f))},
@@ -131,7 +130,6 @@ fun ZenithTopAppBar(
 
                         HorizontalDivider(color = Color.DarkGray, thickness = 0.7.dp)
 
-                        // Item 2: Send Feedback
                         DropdownMenuItem(
                             text = { Text("Send Feedback", color = OffWhite.copy(0.8f), fontFamily = FontFamily.Monospace)},
                             leadingIcon = { Icon(Icons.Outlined.Feedback, null, tint = OffWhite.copy(0.9f))},
@@ -146,7 +144,6 @@ fun ZenithTopAppBar(
                                 try {
                                     context.startActivity(intent)
                                 } catch (_: Exception) {
-                                    // Fallback if user doesn't have email app
                                     Toast.makeText(
                                         context,
                                         "No email application found to send feedback.",
@@ -158,7 +155,6 @@ fun ZenithTopAppBar(
 
                         HorizontalDivider(color = Color.DarkGray, thickness = 0.5.dp)
 
-                        //Item 3: About Zenith
                         DropdownMenuItem(
                             text = { Text("About Zenith", color = OffWhite.copy(0.8f), fontFamily = FontFamily.Monospace) },
                             leadingIcon = { Icon(Icons.Outlined.Info, null, tint = OffWhite.copy(0.9f)) },

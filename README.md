@@ -2,65 +2,84 @@
   <img src="screenshots/Logo.png" width="128" alt="Zenith Logo" />
 
   # Zenith
-  **A strict, telemetry-driven focus engine for deep work.**
+  **A high-reliability focus enforcer designed for absolute discipline.**
 
-  Zenith isn't just a timer—it's a high-performance monitor that tracks device interactions to measure the true quality of your focus. 
+  Zenith is a telemetry-driven focus engine that tracks device interactions to measure the true quality of your focus and enforces work-cycles through context-aware friction.
 
-  [![Kotlin](https://img.shields.io/badge/Kotlin-2.0.0-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
-  [![Jetpack Compose](https://img.shields.io/badge/Compose-1.7.0-4285F4?logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
+  [![Kotlin](https://img.shields.io/badge/Kotlin-2.1.0-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
+  [![Jetpack Compose](https://img.shields.io/badge/Compose-Latest-4285F4?logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
   [![Material 3](https://img.shields.io/badge/Material%203-Latest-757575?logo=materialdesign&logoColor=white)](https://m3.material.io/)
   [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-  [![Changelog](https://img.shields.io/badge/Changelog-Keep%20a%20Changelog-orange)](CHANGELOG.md)
+  [![Changelog](https://img.shields.io/badge/Changelog-v1.0.0--beta-orange)](CHANGELOG.md)
 
   ![Focus Timer Demo](screenshots/focus-timer-demo.gif)
 
-  <sub>Current Status: Core Engine & Real-time Telemetry Mapping.</sub>
+  <sub>Current Status: v1.0.0-beta Operational.</sub>
 </div>
 
 ---
 
-## The Philosophy
-Standard timers are too easy to ignore. Zenith introduces **Context-Aware Friction**. It doesn't just block apps; it monitors your habits and uses telemetry to tell you how deep your focus *actually* is.
+## Philosophy
+Standard timers are too easy to ignore. Zenith introduces accountability through data. It monitors your habits in the background and uses real-time telemetry to penalize distractions, ensuring that deep work is a requirement, not just a goal.
 
-## System Architecture
-Zenith is built on a **Single Source of Truth (SSOT)** principle. The UI, Service, and Persistence layers stay in perfect sync via a unidirectional data flow. This ensures that the focus session remains the absolute state, regardless of whether the application is in the foreground, background, or experiencing process death.
+## Core Features
+
+### 1. Time Debt and The Red Arc
+Distractions are not free. Zenith calculates Time Debt (2x penalty) for every second you spend on forbidden apps. This debt is visualized as a Penalty Red Arc that fills counter-clockwise, forcing you to work off the red before your mission progress resumes.
+
+### 2. Gestural Halo Engine
+A custom-engineered Canvas dial that maps raw touch coordinates to trigonometric angles.
+- Native 60fps Rendering: Optimized DrawScopes for a smooth interaction.
+- Smart Snap: Precision time setting with haptic feedback.
+
+### 3. Sensory Punishment Suite
+Custom-built haptic engine to snap you back to reality.
+- 5 Distinct Patterns: Pulse, SOS, Rapid, and more.
+- Intensity Control: Calibrate vibration strength from 1-100%.
+
+### 4. Roast Manager Intelligence
+A context-aware alert system with 100+ unique roasts categorized into Mild, Brutal, and Savage tiers. The system detects when you have picked up your phone or switched apps.
+
+### 5. Smart Break Bank
+Dynamic, percentage-based break allowances scaled to your mission length.
+- Standard (10%): 6 mins/hour.
+- Relaxed (20%): 12 mins/hour.
+- Monk Mode: Zero breaks. Total isolation.
+
+### 6. Whitelist Manager
+Define your Safe Zones. Zenith allows you to exempt specific productivity modules (e.g., IDEs, Docs, Music) from triggering focus violations.
 
 ## Engineering Highlights
 
-### 1. Gestural Halo Engine (Custom Canvas)
-The core timer isn't built with standard components. It’s a custom-engineered **Canvas dial** that maps raw touch coordinates to trigonometric angles in real-time.
-- **Performance:** Native 60fps rendering using optimized DrawScopes.
-- **Interaction:** Dynamic "Snap-to-Time" logic and gestural haptics for precision control.
+### Resilient System Architecture
+Built on a Single Source of Truth (SSOT) principle. The UI, Foreground Service, and Room Persistence stay in perfect sync, ensuring zero state loss even during process death or background suspension.
 
-### 2. Resilient Lifecycle Management
-To prevent the Android **Low Memory Killer (LMK)** from interrupting deep work, the timer is backed by a high-priority **Foreground Service**.
-- **Survivability:** The session state is persisted across process death using a combination of Service lifecycle hooks and Room persistence.
-- **Synchronization:** Real-time synchronization between the Service and UI is handled via a robust StateFlow implementation.
+### Focus Telemetry Dashboard
+Real-time data visualization using the Vico Cartesian Library. Track your missions, violations, and Focus Score trends with high-fidelity charts.
 
-### 3. Focus Telemetry and Scoring
-Zenith leverages the `UsageStatsManager` API to monitor physical and digital distractions without invasive app blocking:
-- **Event Tracking:** Detection of app switches and physical device pickups during a sprint.
-- **Algorithmic Scoring:** A custom logic engine that translates these events into a 0-100 Focus Score, providing objective data on work quality.
+### Data Privacy Protocol
+Zenith operates as a Closed-Loop System. Telemetry never leaves local encrypted storage. No cloud hooks. No external tracking. Zero data leakage.
 
 ## Tech Stack
-- **Languages:** Kotlin + Coroutines/Flow
-- **UI Framework:** Jetpack Compose (Custom Canvas, Material 3)
-- **Persistence:** Room (SQL with custom analytical queries)
-- **Background Work:** Android Foreground Services
-- **System APIs:** UsageStatsManager
-- **Data Visualization:** Vico Cartesian Library
+- Languages: Kotlin 2.1.0 + Coroutines/Flow
+- UI: Jetpack Compose (Material 3, Custom Canvas)
+- Persistence: Room (SQL with complex analytical queries)
+- Engine: Android Foreground Services (Special Use type)
+- Analytics: UsageStatsManager + Accelerometer Sensor Telemetry
+- Animation: Android 12+ SplashScreen API
 
 ## Getting Started
 1. Clone the repository.
 2. Open in Android Studio (Ladybug+).
-3. Connect a **physical device** (API 26+) for accurate usage telemetry.
-4. Grant `Usage Access` permission in settings when prompted.
+3. Connect a physical device (API 26+) for accurate usage telemetry.
+4. Grant Usage Access and Notification permissions when prompted.
+5. Disable battery optimization for Zenith in Engine Config to ensure the enforcer stays active.
 
 ## License
-Distributed under the Apache 2.0 License. See [**LICENSE**](LICENSE) for more information.
+Distributed under the Apache License 2.0. See LICENSE for more information.
 
 ---
 
-If you find this project interesting or useful for your own deep work, please consider giving this repository a ⭐. It helps me stay motivated and helps others discover the project!
+If you find this project interesting or useful for your own deep work, please consider giving this repository a star. It helps me stay motivated and helps others discover the project.
 
-*Built for professionals who demand total discipline.*
+Built by Vedant Kakade for professionals who demand total discipline.
