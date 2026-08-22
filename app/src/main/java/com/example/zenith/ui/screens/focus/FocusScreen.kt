@@ -53,6 +53,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.zenith.logic.FocusMath
 import com.example.zenith.ui.theme.MutedGray
 import com.example.zenith.ui.theme.OffWhite
 import com.example.zenith.ui.theme.SoftIndigo
@@ -414,8 +415,8 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
     // Dynamic Break Allowance Sheet
     if (state.sessionState == SessionState.PAUSED && !state.isBreakAllowanceSet) {
         val missionMins = state.selectedDurationMinutes
-        val standardMins = (missionMins * 0.1).toInt().coerceAtLeast(2)
-        val relaxedMins = (missionMins * 0.2).toInt().coerceAtLeast(5)
+        val standardMins = FocusMath.calculateBreakBank(missionMins, isRelaxed = false)
+        val relaxedMins = FocusMath.calculateBreakBank(missionMins, isRelaxed = true)
 
         ModalBottomSheet(
             onDismissRequest = { viewModel.resumeSession() },

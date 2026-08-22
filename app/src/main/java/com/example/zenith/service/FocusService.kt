@@ -34,6 +34,7 @@ import com.example.zenith.data.FocusSessionDao
 import com.example.zenith.data.SettingsRepository
 import com.example.zenith.data.UserPreferences
 import com.example.zenith.data.WhitelistedAppDao
+import com.example.zenith.logic.FocusMath
 import com.example.zenith.service.VibrationManager
 import kotlinx.coroutines.*
 import kotlin.math.abs
@@ -282,7 +283,7 @@ class FocusService : Service(), SensorEventListener {
                     // RESUME PROGRESS & APPLY DEBT
                     SessionEventBus.emit(SessionEventBus.SessionEvent.ResumeProgress)
                     val distractionSeconds = ((now - distractionStartedTimestamp) / 1000).toInt()
-                    val penaltySeconds = distractionSeconds * 2
+                    val penaltySeconds = FocusMath.calculateTimeDebt(distractionSeconds)
                     if (penaltySeconds > 0) {
                         SessionEventBus.emit(SessionEventBus.SessionEvent.PenaltyApplied(penaltySeconds))
                     }
@@ -310,7 +311,7 @@ class FocusService : Service(), SensorEventListener {
                     // RESUME PROGRESS & APPLY DEBT (treat Whitelist as safe zone)
                     SessionEventBus.emit(SessionEventBus.SessionEvent.ResumeProgress)
                     val distractionSeconds = ((now - distractionStartedTimestamp) / 1000).toInt()
-                    val penaltySeconds = distractionSeconds * 2
+                    val penaltySeconds = FocusMath.calculateTimeDebt(distractionSeconds)
                     if (penaltySeconds > 0) {
                         SessionEventBus.emit(SessionEventBus.SessionEvent.PenaltyApplied(penaltySeconds))
                     }
@@ -377,7 +378,7 @@ class FocusService : Service(), SensorEventListener {
                 val (title, msg) = RoastManager.getRoast(userPreferences.roastIntensity, "APP_SWITCH", isUrgent = isBrutal)
                 
                 val elapsedDistraction = (System.currentTimeMillis() - distractionStartedTimestamp) / 1000
-                val currentDebt = elapsedDistraction * 2
+                val currentDebt = FocusMath.calculateTimeDebt(elapsedDistraction.toInt())
                 updateNotification(title, msg + " [DEBT: +${currentDebt}s]", isUrgent = isBrutal)
             }
         }

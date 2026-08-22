@@ -8,6 +8,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.example.zenith.service.FocusService
 import com.example.zenith.service.SessionEventBus
+import com.example.zenith.logic.FocusMath
 import com.example.zenith.ui.common.UiStateMachine
 import com.example.zenith.ui.common.asUiStateMachine
 import kotlinx.coroutines.Job
@@ -68,7 +69,7 @@ class FocusViewModel(
             }
             
             // Limit penalty to 2x original mission
-            val maxAllowedSeconds = uiState.value.selectedDurationMinutes * 60 * 2
+            val maxAllowedSeconds = FocusMath.calculateTimeDebt(uiState.value.selectedDurationMinutes * 60)
             
             // Incremental surge animation
             repeat(seconds) {
