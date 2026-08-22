@@ -71,8 +71,8 @@ fun ZenithBottomBar(
                 val isSelected = currentDestination == destination
 
                 val label = when (destination) {
-                    Destination.Focus -> "FOCUS"
-                    Destination.Stats -> "STATS"
+                    Destination.Focus -> "Focus"
+                    Destination.Stats -> "Stats"
                     else -> ""
                 }
                 val icon: ImageVector = when (destination) {
@@ -115,10 +115,8 @@ fun ZenithBottomBar(
                     label = {
                         Text(
                             text = label,
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            letterSpacing = 0.5.sp
-                            )
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium)
+                        )
                     }
                 )
             }

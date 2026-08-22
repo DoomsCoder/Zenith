@@ -1,8 +1,8 @@
-package com.example.zenith.ui.screens.settings
-
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import com.example.zenith.R
 import com.example.zenith.ui.theme.MutedGray
 import com.example.zenith.ui.theme.SoftIndigo
@@ -39,7 +40,6 @@ fun AboutZenithScreen(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
-    var showChangelog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -132,7 +132,8 @@ fun AboutZenithScreen(
             }
             
             BlueActionLink("Open changelog") {
-                showChangelog = true
+                val intent = Intent(Intent.ACTION_VIEW, "https://github.com/DoomsCoder/Zenith/blob/main/CHANGELOG.md".toUri())
+                context.startActivity(intent)
             }
             
             BlueActionLink("Copy debug info") {
@@ -141,26 +142,6 @@ fun AboutZenithScreen(
 
             Spacer(Modifier.height(48.dp))
         }
-    }
-
-    if (showChangelog) {
-        AlertDialog(
-            onDismissRequest = { showChangelog = false },
-            containerColor = Color(0xFF111111),
-            title = { Text("Changelog", color = Color.White, fontWeight = FontWeight.Bold) },
-            text = {
-                Text(
-                    "v1.0.0-beta\n\n- Initial release of Zenith Focus Engine\n- Deep Focus monitoring system\n- Time Debt & Penalty engine\n- Whitelist manager\n- Sensory punishment suite\n- Mission telemetry dashboard",
-                    color = MutedGray,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = { showChangelog = false }) {
-                    Text("Close", color = SoftIndigo, fontWeight = FontWeight.Bold)
-                }
-            }
-        )
     }
 }
 

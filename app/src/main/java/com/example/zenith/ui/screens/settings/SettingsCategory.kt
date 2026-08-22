@@ -50,7 +50,7 @@ val settingsCategories = listOf(
     SettingsCategory(
         id = "about",
         title = "About Zenith",
-        subtitle = "Version 1.0.4 · Credits · Debug info · License",
+        subtitle = "Version 1.0.0-beta · Credits · License",
         icon = Icons.Outlined.Info
     )
 )
