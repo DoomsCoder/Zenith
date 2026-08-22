@@ -1,3 +1,5 @@
+package com.example.zenith.ui.screens.settings
+
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
