@@ -76,10 +76,10 @@ Zenith operates as a Closed-Loop System. Telemetry never leaves local encrypted 
 5. Disable battery optimization for Zenith in Engine Config to ensure the enforcer stays active.
 
 ## License
-Distributed under the Apache License 2.0. See LICENSE for more information.
+Distributed under the Apache License 2.0. See [LICENSE](LICENSE) for more information.
 
 ---
 
-If you find this project interesting or useful for your own deep work, please consider giving this repository a star. It helps me stay motivated and helps others discover the project.
+If you find this project interesting or useful for your own deep work, please consider giving this repository a star ⭐. It helps me stay motivated and helps others discover the project.
 
 Built by Vedant Kakade for professionals who demand total discipline.
