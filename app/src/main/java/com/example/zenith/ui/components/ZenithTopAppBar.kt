@@ -7,8 +7,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Send
@@ -57,113 +62,116 @@ fun ZenithTopAppBar(
     val context = LocalContext.current
     var menuExpanded by remember { mutableStateOf(false) }
 
-    TopAppBar(
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color(0xFF121212),
-            titleContentColor = Color.White
-        ),
-        title = {
-            Column(modifier = Modifier.padding(start = 8.dp)) {
-                Text(
-                    text = "Zenith",
-                    color = SoftIndigo,
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Bold,
-                        fontStyle = FontStyle.Italic,
-                        letterSpacing = 0.2.sp
+    Column(modifier = Modifier.background(Color(0xFF121212)).statusBarsPadding()) {
+        Spacer(Modifier.height(16.dp))
+        TopAppBar(
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = Color.Transparent,
+                titleContentColor = Color.White
+            ),
+            title = {
+                Column(modifier = Modifier.padding(start = 8.dp)) {
+                    Text(
+                        text = "Zenith",
+                        color = SoftIndigo,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontStyle = FontStyle.Italic,
+                            letterSpacing = 0.2.sp
+                        )
                     )
-                )
-                Text(
-                    text = "Focus engine",
-                    color = MutedGray.copy(alpha = 0.9f),
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        letterSpacing = 0.2.sp,
-                        fontSize = 11.sp
+                    Text(
+                        text = "Focus engine",
+                        color = MutedGray.copy(alpha = 0.9f),
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            letterSpacing = 0.2.sp,
+                            fontSize = 11.sp
+                        )
                     )
-                )
-            }
-        },
-        actions = {
-            Box(
-                modifier = Modifier
-                    .padding(end = 16.dp)
-                    .size(40.dp)
-                    .background(Color.White.copy(alpha = 0.03f), RoundedCornerShape(12.dp))
-                    .border(
-                        BorderStroke(
-                            width = 1.dp,
-                            color = Color.White.copy(0.08f)
+                }
+            },
+            actions = {
+                Box(
+                    modifier = Modifier
+                        .padding(end = 16.dp)
+                        .size(40.dp)
+                        .background(Color.White.copy(alpha = 0.03f), RoundedCornerShape(12.dp))
+                        .border(
+                            BorderStroke(
+                                width = 1.dp,
+                                color = Color.White.copy(0.08f)
+                            ),
+                            RoundedCornerShape(12.dp)
                         ),
-                        RoundedCornerShape(12.dp)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                IconButton(onClick = { menuExpanded = true}) {
-                    Icon(
-                        imageVector = Icons.Default.MoreVert,
-                        contentDescription = "Menu",
-                        tint = MutedGray.copy(0.8f)
-                    )
-                }
-
-                DropdownMenu(
-                    expanded = menuExpanded,
-                    onDismissRequest = { menuExpanded = false},
-                    shape = RoundedCornerShape(20.dp),
-                    modifier = Modifier.background(Color(0xFF1A1A1A))
+                    contentAlignment = Alignment.Center
                 ) {
-                    // Item 1: Settings
-                    DropdownMenuItem(
-                        text = { Text("Settings", color = OffWhite.copy(0.8f), fontFamily = FontFamily.Monospace) },
-                        leadingIcon = {Icon(Icons.Default.Settings, null, tint = OffWhite.copy(0.9f))},
-                        onClick = {
-                            menuExpanded = false
-                            onNavigateToSettings()
-                        }
-                    )
+                    IconButton(onClick = { menuExpanded = true}) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "Menu",
+                            tint = MutedGray.copy(0.8f)
+                        )
+                    }
 
-                    HorizontalDivider(color = Color.DarkGray, thickness = 0.7.dp)
-
-                    // Item 2: Send Feedback
-                    DropdownMenuItem(
-                        text = { Text("Send Feedback", color = OffWhite.copy(0.8f), fontFamily = FontFamily.Monospace)},
-                        leadingIcon = { Icon(Icons.Outlined.Feedback, null, tint = OffWhite.copy(0.9f))},
-                        trailingIcon = { Icon(Icons.AutoMirrored.Outlined.Send, null, tint = OffWhite.copy(0.9f))},
-                        onClick = {
-                            menuExpanded = false
-                            val intent = Intent(Intent.ACTION_SENDTO).apply {
-                                data = "mailto:support@zenith.app".toUri()
-                                putExtra(Intent.EXTRA_SUBJECT, "Zenith Feedback - v1.0")
+                    DropdownMenu(
+                        expanded = menuExpanded,
+                        onDismissRequest = { menuExpanded = false},
+                        shape = RoundedCornerShape(20.dp),
+                        modifier = Modifier.background(Color(0xFF1A1A1A))
+                    ) {
+                        // Item 1: Settings
+                        DropdownMenuItem(
+                            text = { Text("Settings", color = OffWhite.copy(0.8f), fontFamily = FontFamily.Monospace) },
+                            leadingIcon = {Icon(Icons.Default.Settings, null, tint = OffWhite.copy(0.9f))},
+                            onClick = {
+                                menuExpanded = false
+                                onNavigateToSettings()
                             }
+                        )
 
-                            try {
-                                context.startActivity(intent)
-                            } catch (_: Exception) {
-                                // Fallback if user doesn't have email app
-                                Toast.makeText(
-                                    context,
-                                    "No email application found to send feedback.",
-                                    Toast.LENGTH_LONG
-                                ).show()
+                        HorizontalDivider(color = Color.DarkGray, thickness = 0.7.dp)
+
+                        // Item 2: Send Feedback
+                        DropdownMenuItem(
+                            text = { Text("Send Feedback", color = OffWhite.copy(0.8f), fontFamily = FontFamily.Monospace)},
+                            leadingIcon = { Icon(Icons.Outlined.Feedback, null, tint = OffWhite.copy(0.9f))},
+                            trailingIcon = { Icon(Icons.AutoMirrored.Outlined.Send, null, tint = OffWhite.copy(0.9f))},
+                            onClick = {
+                                menuExpanded = false
+                                val intent = Intent(Intent.ACTION_SENDTO).apply {
+                                    data = "mailto:vedantkakade252@gmail.com".toUri()
+                                    putExtra(Intent.EXTRA_SUBJECT, "Zenith Feedback - v1.0")
+                                }
+
+                                try {
+                                    context.startActivity(intent)
+                                } catch (_: Exception) {
+                                    // Fallback if user doesn't have email app
+                                    Toast.makeText(
+                                        context,
+                                        "No email application found to send feedback.",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
                             }
-                        }
-                    )
+                        )
 
-                    HorizontalDivider(color = Color.DarkGray, thickness = 0.5.dp)
+                        HorizontalDivider(color = Color.DarkGray, thickness = 0.5.dp)
 
-                    //Item 3: About Zenith
-                    DropdownMenuItem(
-                        text = { Text("About Zenith", color = OffWhite.copy(0.8f), fontFamily = FontFamily.Monospace) },
-                        leadingIcon = { Icon(Icons.Outlined.Info, null, tint = OffWhite.copy(0.9f)) },
-                        onClick = {
-                            menuExpanded = false
-                            onNavigateToAbout()
-                        }
-                    )
+                        //Item 3: About Zenith
+                        DropdownMenuItem(
+                            text = { Text("About Zenith", color = OffWhite.copy(0.8f), fontFamily = FontFamily.Monospace) },
+                            leadingIcon = { Icon(Icons.Outlined.Info, null, tint = OffWhite.copy(0.9f)) },
+                            onClick = {
+                                menuExpanded = false
+                                onNavigateToAbout()
+                            }
+                        )
+                    }
                 }
             }
-        }
-    )
+        )
+    }
 }
 
 @Preview(showBackground = true)

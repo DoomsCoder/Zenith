@@ -61,11 +61,12 @@ fun StatisticsScreen(
                         detectTapGestures(
                             onTap = { chartSelectedIndex = null }
                         )
-                    },
+                    }
+                    .statusBarsPadding(),
                 contentPadding = PaddingValues(
                     start = 24.dp,
                     end = 24.dp,
-                    top = 24.dp,
+                    top = 12.dp, // Lowered
                     bottom = 100.dp
                 )
             ) {

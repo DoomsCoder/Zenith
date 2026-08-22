@@ -61,6 +61,7 @@ fun SettingsScreen(
             }
             .statusBarsPadding()
     ) {
+        Spacer(Modifier.height(16.dp)) // Increased
         SettingsHeader(
             query = searchQuery,
             onQueryChange = { searchQuery = it },

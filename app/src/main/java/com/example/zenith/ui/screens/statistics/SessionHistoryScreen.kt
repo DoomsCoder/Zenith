@@ -26,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -48,6 +49,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.example.zenith.ui.theme.MutedGray
 import com.example.zenith.ui.theme.SoftIndigo
 
 @Composable
@@ -79,29 +81,33 @@ fun SessionHistoryScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0A0A0A))
+            .background(Color(0xFF121212))
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 24.dp, start = 16.dp, end = 24.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = { if (isSelectionMode) selectedIds = emptySet() else onBackClick() }) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                    contentDescription = "Back",
-                    tint = Color.White
+        Column(modifier = Modifier.background(Color(0xFF121212)).statusBarsPadding()) {
+            Spacer(Modifier.height(16.dp)) // Increased spacing
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = { if (isSelectionMode) selectedIds = emptySet() else onBackClick() }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White
+                    )
+                }
+                Spacer(Modifier.width(4.dp))
+                Text(
+                    text = "Session history",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White
+                    )
                 )
             }
-            Spacer(Modifier.width(8.dp))
-            Text(
-                text = "Session history",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Medium,
-                    color = SoftIndigo // Consistent Header Color
-                )
-            )
+            Spacer(Modifier.height(8.dp))
         }
 
         Spacer(Modifier.height(32.dp))
@@ -224,16 +230,22 @@ fun SessionHistoryScreen(
             contentPadding = PaddingValues(start = 24.dp, top = 8.dp, end = 24.dp, bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(items = filteredSessions, key = { it.id }) { session ->
-                SessionHistoryCard(
-                    item = session,
-                    isSelected = selectedIds.contains(session.id),
-                    isSelectionMode = isSelectionMode,
-                    onToggle = {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        selectedIds = if (selectedIds.contains(session.id)) selectedIds - session.id else selectedIds + session.id
-                    }
-                )
+            if (filteredSessions.isEmpty()) {
+                item {
+                    HistoryEmptyState()
+                }
+            } else {
+                items(items = filteredSessions, key = { it.id }) { session ->
+                    SessionHistoryCard(
+                        item = session,
+                        isSelected = selectedIds.contains(session.id),
+                        isSelectionMode = isSelectionMode,
+                        onToggle = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            selectedIds = if (selectedIds.contains(session.id)) selectedIds - session.id else selectedIds + session.id
+                        }
+                    )
+                }
             }
         }
     }
@@ -447,6 +459,27 @@ private fun SessionHistoryCard(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun HistoryEmptyState() {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(top = 80.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            Icons.Default.History,
+            null,
+            tint = MutedGray.copy(0.2f),
+            modifier = Modifier.size(64.dp)
+        )
+        Spacer(Modifier.height(24.dp))
+        Text(
+            "No history records found.",
+            color = MutedGray.copy(0.6f),
+            style = MaterialTheme.typography.bodyLarge
+        )
     }
 }
 

@@ -44,25 +44,27 @@ fun DataPrivacyScreen(
     var showConfirmAction by remember { mutableStateOf<DataAction?>(null) }
 
     Scaffold(
-        modifier = Modifier.statusBarsPadding(),
         topBar = {
-            TopAppBar(
-                title = { 
-                    Text(
-                        "Data & Privacy", 
-                        color = Color.White, 
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Medium
-                        )
-                    ) 
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = Color.White)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF121212))
-            )
+            Column(modifier = Modifier.background(Color(0xFF121212)).statusBarsPadding()) {
+                Spacer(Modifier.height(16.dp))
+                TopAppBar(
+                    title = { 
+                        Text(
+                            "Data & Privacy", 
+                            color = Color.White, 
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Medium
+                            )
+                        ) 
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = Color.White)
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+                )
+            }
         },
         containerColor = Color(0xFF121212)
     ) { innerPadding ->

@@ -2,7 +2,10 @@ package com.example.zenith.ui.screens.settings
 
 import android.app.NotificationManager
 import android.content.Intent
+import android.net.Uri
 import android.provider.Settings
+import android.os.PowerManager
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -11,10 +14,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.BatteryAlert
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,25 +37,32 @@ fun EngineConfigScreen(
     val prefs by viewModel.settingsState.collectAsState()
     val context = LocalContext.current
     val notificationManager = context.getSystemService(NotificationManager::class.java)
+    val powerManager = context.getSystemService(PowerManager::class.java)
+
+    val isBatteryOptimized = remember {
+        !powerManager.isIgnoringBatteryOptimizations(context.packageName)
+    }
 
     Scaffold(
-        modifier = Modifier.statusBarsPadding(),
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        "Engine Config",
-                        color = Color.White,
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Medium)
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = Color.White)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF121212))
-            )
+            Column(modifier = Modifier.background(Color(0xFF121212)).statusBarsPadding()) {
+                Spacer(Modifier.height(16.dp))
+                TopAppBar(
+                    title = {
+                        Text(
+                            "Engine Config",
+                            color = Color.White,
+                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Medium)
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = Color.White)
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+                )
+            }
         },
         containerColor = Color(0xFF121212)
     ) { innerPadding ->
@@ -66,6 +75,18 @@ fun EngineConfigScreen(
                     .verticalScroll(rememberScrollState())
             ) {
                 Spacer(Modifier.height(16.dp))
+
+                if (isBatteryOptimized) {
+                    BatteryOptimizationCard(
+                        onClick = {
+                            val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                                data = Uri.parse("package:${context.packageName}")
+                            }
+                            context.startActivity(intent)
+                        }
+                    )
+                    Spacer(Modifier.height(24.dp))
+                }
                 
                 SettingsSectionHeader("Enforcement")
 
@@ -147,6 +168,41 @@ fun EngineConfigScreen(
                 )
 
                 Spacer(Modifier.height(48.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun BatteryOptimizationCard(onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        color = Color(0xFF1A1A1A),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, Color(0xFFEF5350).copy(0.2f))
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                Icons.Outlined.BatteryAlert,
+                null,
+                tint = Color(0xFFEF5350),
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(Modifier.width(16.dp))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    "Engine reliability at risk",
+                    color = Color.White,
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                )
+                Text(
+                    "Android may kill Zenith in the background. Tap to disable battery optimization.",
+                    color = MutedGray,
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
         }
     }

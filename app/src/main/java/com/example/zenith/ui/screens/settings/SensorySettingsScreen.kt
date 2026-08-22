@@ -5,6 +5,7 @@ import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -48,23 +49,25 @@ fun SensorySettingsScreen(
     }
 
     Scaffold(
-        modifier = Modifier.statusBarsPadding(),
         topBar = {
-            TopAppBar(
-                title = { 
-                    Text(
-                        "Sensory Punishment", 
-                        color = Color.White, 
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Medium)
-                    ) 
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = Color.White)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF121212))
-            )
+            Column(modifier = Modifier.background(Color(0xFF121212)).statusBarsPadding()) {
+                Spacer(Modifier.height(16.dp))
+                TopAppBar(
+                    title = { 
+                        Text(
+                            "Sensory Punishment", 
+                            color = Color.White, 
+                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Medium)
+                        ) 
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = Color.White)
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+                )
+            }
         },
         containerColor = Color(0xFF121212)
     ) { innerPadding ->
