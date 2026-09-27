@@ -52,6 +52,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.zenith.logic.FocusMath
 import com.example.zenith.ui.theme.MutedGray
@@ -77,7 +78,7 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
         launcher.launch(Manifest.permission.READ_PHONE_STATE)
     }
     
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     var showCustomSheet by rememberSaveable { mutableStateOf(false) }
     var customPickerValue by rememberSaveable { mutableIntStateOf(45) }
 

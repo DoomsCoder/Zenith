@@ -78,7 +78,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                 val intent = Intent(getApplication(), FocusService::class.java).apply {
                     action = FocusService.ACTION_STOP
                 }
-                getApplication<Application>().startForegroundService(intent)
+                getApplication<Application>().startService(intent)
                 delay(500)
                 db.focusSessionDao().deleteAllSessions()
                 Toast.makeText(getApplication(), "MISSION HISTORY PURGED", Toast.LENGTH_SHORT).show()
@@ -102,7 +102,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                     action = FocusService.ACTION_STOP
                     putExtra(FocusService.EXTRA_IS_FINISHED, false)
                 }
-                getApplication<Application>().startForegroundService(intent)
+                getApplication<Application>().startService(intent)
                 
                 // Longer delay to ensure Service and its Coroutines are totally dead
                 delay(1000) 

@@ -26,6 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.zenith.ui.theme.MutedGray
 import com.example.zenith.ui.theme.SoftIndigo
 
@@ -37,9 +38,9 @@ fun DataPrivacyScreen(
     viewModel: SettingsViewModel,
     onBack: () -> Unit
 ) {
-    val totalSessions by viewModel.totalSessions.collectAsState()
-    val totalPickups by viewModel.totalPickups.collectAsState()
-    val totalAppSwitches by viewModel.totalAppSwitches.collectAsState()
+    val totalSessions by viewModel.totalSessions.collectAsStateWithLifecycle()
+    val totalPickups by viewModel.totalPickups.collectAsStateWithLifecycle()
+    val totalAppSwitches by viewModel.totalAppSwitches.collectAsStateWithLifecycle()
     
     var showConfirmAction by remember { mutableStateOf<DataAction?>(null) }
 

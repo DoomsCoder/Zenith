@@ -8,6 +8,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.example.zenith.service.FocusService
 import com.example.zenith.service.SessionEventBus
+import com.example.zenith.logic.AnalyticsHelper
 import com.example.zenith.logic.FocusMath
 import com.example.zenith.ui.common.UiStateMachine
 import com.example.zenith.ui.common.asUiStateMachine
@@ -21,6 +22,7 @@ class FocusViewModel(
     savedState: SavedStateHandle
 ) : AndroidViewModel(application) {
 
+    private val analyticsHelper = AnalyticsHelper(application)
     private val uiStateMachine: UiStateMachine<FocusViewState> =
         savedState.asUiStateMachine(FocusViewState())
 
@@ -271,6 +273,7 @@ class FocusViewModel(
         }
 
         if (uiState.value.sessionState == SessionState.RUNNING) {
+            analyticsHelper.logSessionStarted(uiState.value.missionText, uiState.value.selectedDurationMinutes)
             startFocusTimer()
             val intent = Intent(getApplication(), FocusService::class.java).apply {
                 putExtra("MISSION_NAME", uiState.value.missionText)
@@ -285,6 +288,7 @@ class FocusViewModel(
     fun finishSession() {
         focusTimerJob?.cancel()
         pauseTimerJob?.cancel()
+        analyticsHelper.logSessionFinished(uiState.value.missionText, uiState.value.selectedDurationMinutes * 60)
         sendServiceCommand(isFinished = true)
         uiStateMachine.update { copy(sessionState = SessionState.FINISHED) }
     }
@@ -306,7 +310,8 @@ class FocusViewModel(
             action = FocusService.ACTION_STOP
             putExtra(FocusService.EXTRA_IS_FINISHED, isFinished)
         }
-        getApplication<Application>().startForegroundService(intent)
+        // Use startService, not startForegroundService, when stopping the service
+        getApplication<Application>().startService(intent)
     }
 
     fun toggleFocusSession() {

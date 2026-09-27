@@ -34,11 +34,4 @@ data class FocusViewState (
     val isIntegrityCompromised: Boolean = false,
     val showPenaltyFlash: Boolean = false,
     val isProgressFrozen: Boolean = false
-) : Parcelable {
-    val progress: Float
-        get() = if (totalFocusSeconds > 0) {
-            ((totalFocusSeconds - remainingFocusSeconds).toFloat() / totalFocusSeconds.toFloat()).coerceIn(0f, 1f)
-        } else {
-            0f
-        }
-}
+) : Parcelable

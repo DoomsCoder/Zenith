@@ -35,6 +35,7 @@ import com.example.zenith.data.SettingsRepository
 import com.example.zenith.data.UserPreferences
 import com.example.zenith.data.WhitelistedAppDao
 import com.example.zenith.logic.FocusMath
+import com.example.zenith.logic.AnalyticsHelper
 import com.example.zenith.service.VibrationManager
 import kotlinx.coroutines.*
 import kotlin.math.abs
@@ -50,6 +51,7 @@ class FocusService : Service(), SensorEventListener {
     private lateinit var usageStatsManager: UsageStatsManager
     private lateinit var sensorManager: SensorManager
     private lateinit var vibrator: Vibrator
+    private lateinit var analyticsHelper: AnalyticsHelper
     private val settingsRepository by lazy { SettingsRepository(this) }
 
     private val mainChannelID = "focus_service_channel"
@@ -121,6 +123,7 @@ class FocusService : Service(), SensorEventListener {
         whitelistedAppDao = db.whitelistedAppDao()
         usageStatsManager = getSystemService(USAGE_STATS_SERVICE) as UsageStatsManager
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+        analyticsHelper = AnalyticsHelper(this)
 
         vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
@@ -237,6 +240,7 @@ class FocusService : Service(), SensorEventListener {
     private fun executeMissionFailure() {
         Log.e("FocusService", "MISSION EXECUTED: User AWOL for 3 minutes.")
         sessionScope.launch {
+            analyticsHelper.logSessionFailed("Zenith Mission", "abandoned_3_minutes")
             SessionEventBus.emit(SessionEventBus.SessionEvent.MissionExecuted)
             handleStopCommand(isExplicitFinish = false)
         }
@@ -316,6 +320,14 @@ class FocusService : Service(), SensorEventListener {
             }
         }
         lastCheckedTimestamp = now
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        super.onTaskRemoved(rootIntent)
+        Log.d("FocusService", "App was swiped away by user. Terminating session.")
+
+        // Cleanly stop the service and mark session as failed
+        handleStopCommand(isExplicitFinish = false)
     }
 
     private fun handlePickupViolation() {

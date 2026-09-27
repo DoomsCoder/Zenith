@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.zenith.service.VibrationManager
 import com.example.zenith.ui.theme.MutedGray
 import com.example.zenith.ui.theme.SoftIndigo
@@ -35,7 +36,7 @@ fun SensorySettingsScreen(
     viewModel: SettingsViewModel,
     onBack: () -> Unit
 ) {
-    val prefs by viewModel.settingsState.collectAsState()
+    val prefs by viewModel.settingsState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var showPatternSheet by remember { mutableStateOf(false) }
 
