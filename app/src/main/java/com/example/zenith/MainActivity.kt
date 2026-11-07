@@ -28,6 +28,7 @@ import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.zenith.animation.setupSplashScreenExitAnimation
 import com.example.zenith.ui.components.ZenithBottomBar
 import com.example.zenith.ui.components.ZenithTopAppBar
@@ -47,7 +48,9 @@ import com.example.zenith.ui.screens.statistics.SessionHistoryScreen
 import com.example.zenith.ui.screens.statistics.StatisticsScreen
 import com.example.zenith.ui.screens.statistics.StatisticsViewModel
 import com.example.zenith.ui.theme.ZenithTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -64,21 +67,13 @@ class MainActivity : ComponentActivity() {
                 @Suppress("UNCHECKED_CAST")
                 val backStack = navKeyBackStack as NavBackStack<Destination>
 
-                val focusViewModel: FocusViewModel = viewModel(
-                    viewModelStoreOwner = LocalViewModelStoreOwner.current!!
-                )
+                val focusViewModel: FocusViewModel = hiltViewModel()
 
-                val statsViewModel: StatisticsViewModel = viewModel(
-                    viewModelStoreOwner = LocalViewModelStoreOwner.current!!
-                )
+                val statsViewModel: StatisticsViewModel = hiltViewModel()
 
-                val settingsViewModel: SettingsViewModel = viewModel(
-                    viewModelStoreOwner = LocalViewModelStoreOwner.current!!
-                )
+                val settingsViewModel: SettingsViewModel = hiltViewModel()
 
-                val whitelistViewModel: WhitelistViewModel = viewModel(
-                    viewModelStoreOwner = LocalViewModelStoreOwner.current!!
-                )
+                val whitelistViewModel: WhitelistViewModel = hiltViewModel()
 
                 val currentDestination = backStack.last()
                 val showBars = currentDestination.showSystemBars

@@ -37,22 +37,29 @@ import com.example.zenith.data.WhitelistedAppDao
 import com.example.zenith.logic.FocusMath
 import com.example.zenith.logic.AnalyticsHelper
 import com.example.zenith.service.VibrationManager
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
+import javax.inject.Inject
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
 
+@AndroidEntryPoint
 class FocusService : Service(), SensorEventListener {
 
-    private lateinit var db : AppDatabase
-    private lateinit var focusSessionDao: FocusSessionDao
-    private lateinit var distractionEventDao: DistractionEventDao
-    private lateinit var whitelistedAppDao: WhitelistedAppDao
+    @Inject
+    lateinit var focusSessionDao: FocusSessionDao
+    @Inject
+    lateinit var distractionEventDao: DistractionEventDao
+    @Inject
+    lateinit var whitelistedAppDao: WhitelistedAppDao
     private lateinit var usageStatsManager: UsageStatsManager
     private lateinit var sensorManager: SensorManager
     private lateinit var vibrator: Vibrator
-    private lateinit var analyticsHelper: AnalyticsHelper
-    private val settingsRepository by lazy { SettingsRepository(this) }
+    @Inject
+    lateinit var analyticsHelper: AnalyticsHelper
+    @Inject
+    lateinit var settingsRepository: SettingsRepository
 
     private val mainChannelID = "focus_service_channel"
     private var currentSessionId: Long = -1
@@ -117,13 +124,8 @@ class FocusService : Service(), SensorEventListener {
 
     override fun onCreate() {
         super.onCreate()
-        db = AppDatabase.getDatabase(this)
-        focusSessionDao = db.focusSessionDao()
-        distractionEventDao = db.distractionEventDao()
-        whitelistedAppDao = db.whitelistedAppDao()
         usageStatsManager = getSystemService(USAGE_STATS_SERVICE) as UsageStatsManager
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
-        analyticsHelper = AnalyticsHelper(this)
 
         vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager

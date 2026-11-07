@@ -3,8 +3,13 @@ package com.example.zenith.logic
 import android.content.Context
 import android.os.Bundle
 import com.google.firebase.analytics.FirebaseAnalytics
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 
-class AnalyticsHelper(context: Context) {
+class AnalyticsHelper @Inject constructor(
+    @param:ApplicationContext
+    private val context: Context
+) {
     private val firebaseAnalytics: FirebaseAnalytics = FirebaseAnalytics.getInstance(context)
 
     fun logSessionStarted(missionName: String, plannedMinutes: Int) {

@@ -20,14 +20,14 @@ object SessionEventBus {
         _events.resetReplayCache()
     }
 
-    sealed class SessionEvent {
-        object PauseForCall : SessionEvent()
-        object ResumeAfterCall : SessionEvent()
-        object UserManualPause : SessionEvent()
-        object UserManualResume : SessionEvent()
-        data class PenaltyApplied(val seconds: Int) : SessionEvent()
-        object MissionExecuted : SessionEvent()
-        object PauseProgress : SessionEvent()
-        object ResumeProgress : SessionEvent()
+    sealed interface SessionEvent {
+        object PauseForCall : SessionEvent
+        object ResumeAfterCall : SessionEvent
+        object UserManualPause : SessionEvent
+        object UserManualResume : SessionEvent
+        data class PenaltyApplied(val seconds: Int) : SessionEvent
+        object MissionExecuted : SessionEvent
+        object PauseProgress : SessionEvent
+        object ResumeProgress : SessionEvent
     }
 }

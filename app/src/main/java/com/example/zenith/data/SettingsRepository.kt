@@ -7,12 +7,18 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
+import javax.inject.Singleton
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "zenith_settings")
 
-class SettingsRepository(private val context: Context) {
+@Singleton
+class SettingsRepository @Inject constructor(
+    @param:ApplicationContext private val context: Context
+) {
 
     private val KEY_STRICTNESS = intPreferencesKey("strictness_level")
     private val KEY_CALL_SHIELD = booleanPreferencesKey("call_shield")

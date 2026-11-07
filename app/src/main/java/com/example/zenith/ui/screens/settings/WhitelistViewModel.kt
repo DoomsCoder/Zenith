@@ -1,13 +1,16 @@
 package com.example.zenith.ui.screens.settings
 
 import android.app.Application
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
-import android.content.pm.PackageManager
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.zenith.data.AppDatabase
+// Removed AppDatabase import
 import com.example.zenith.data.WhitelistedApp
+import com.example.zenith.data.WhitelistedAppDao
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,12 +19,16 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
-class WhitelistViewModel(application: Application) : AndroidViewModel(application) {
-    private val dao = AppDatabase.getDatabase(application).whitelistedAppDao()
-    private val packageManager = application.packageManager
+@HiltViewModel
+class WhitelistViewModel @Inject constructor(
+    @param:ApplicationContext private val context: Context,
+    private val whitelistedAppDao: WhitelistedAppDao,
+) : ViewModel() {
+    private val packageManager = context.packageManager
 
-    val whitelistedApps: StateFlow<List<WhitelistedApp>> = dao.getAllWhitelistedApps()
+    val whitelistedApps: StateFlow<List<WhitelistedApp>> = whitelistedAppDao.getAllWhitelistedApps()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val _installedApps = MutableStateFlow<List<AppInfo>>(emptyList())
@@ -46,7 +53,7 @@ class WhitelistViewModel(application: Application) : AndroidViewModel(applicatio
                 
                 resolveInfos.mapNotNull { resolveInfo ->
                     val packageName = resolveInfo.activityInfo.packageName
-                    if (packageName == getApplication<Application>().packageName) return@mapNotNull null
+                    if (packageName == context.packageName) return@mapNotNull null
                     
                     val appInfo = try {
                         packageManager.getApplicationInfo(packageName, 0)
@@ -102,9 +109,9 @@ class WhitelistViewModel(application: Application) : AndroidViewModel(applicatio
     fun toggleWhitelist(packageName: String, appName: String, isWhitelisted: Boolean) {
         viewModelScope.launch {
             if (isWhitelisted) {
-                dao.insertApp(WhitelistedApp(packageName, appName))
+                whitelistedAppDao.insertApp(WhitelistedApp(packageName, appName))
             } else {
-                dao.deleteApp(WhitelistedApp(packageName, appName))
+                whitelistedAppDao.deleteApp(WhitelistedApp(packageName, appName))
             }
         }
     }

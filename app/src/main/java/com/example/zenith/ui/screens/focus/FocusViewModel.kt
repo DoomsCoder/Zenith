@@ -1,10 +1,12 @@
 package com.example.zenith.ui.screens.focus
 
 import android.app.Application
+import android.content.Context
 import android.content.Intent
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.zenith.service.FocusService
 import com.example.zenith.service.SessionEventBus
@@ -12,17 +14,20 @@ import com.example.zenith.logic.AnalyticsHelper
 import com.example.zenith.logic.FocusMath
 import com.example.zenith.ui.common.UiStateMachine
 import com.example.zenith.ui.common.asUiStateMachine
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class FocusViewModel(
-    application: Application,
+@HiltViewModel
+class FocusViewModel @Inject constructor(
+    @param:ApplicationContext private val context: Context,
+    private val analyticsHelper: AnalyticsHelper,
     savedState: SavedStateHandle
-) : AndroidViewModel(application) {
-
-    private val analyticsHelper = AnalyticsHelper(application)
+) : ViewModel() {
     private val uiStateMachine: UiStateMachine<FocusViewState> =
         savedState.asUiStateMachine(FocusViewState())
 
@@ -87,7 +92,7 @@ class FocusViewModel(
         pauseTimerJob?.cancel()
         uiStateMachine.update { copy(sessionState = SessionState.IDLE) }
         resetToDefaults()
-        Toast.makeText(getApplication(), "MISSION FAILED: Integrity compromised for too long.", Toast.LENGTH_LONG).show()
+        Toast.makeText(context, "MISSION FAILED: Integrity compromised for too long.", Toast.LENGTH_LONG).show()
     }
 
     private fun handleCallPause() {
@@ -157,11 +162,11 @@ class FocusViewModel(
             )
         }
 
-        val intent = Intent(getApplication(), FocusService::class.java).apply {
+        val intent = Intent(context, FocusService::class.java).apply {
             putExtra("MISSION_NAME", mission)
             putExtra("PLANNED_MINUTES", minutes)
         }
-        getApplication<Application>().startForegroundService(intent)
+        context.startForegroundService(intent)
         startFocusTimer()
     }
 
@@ -275,11 +280,11 @@ class FocusViewModel(
         if (uiState.value.sessionState == SessionState.RUNNING) {
             analyticsHelper.logSessionStarted(uiState.value.missionText, uiState.value.selectedDurationMinutes)
             startFocusTimer()
-            val intent = Intent(getApplication(), FocusService::class.java).apply {
+            val intent = Intent(context, FocusService::class.java).apply {
                 putExtra("MISSION_NAME", uiState.value.missionText)
                 putExtra("PLANNED_MINUTES", uiState.value.selectedDurationMinutes)
             }
-            getApplication<Application>().startForegroundService(intent)
+            context.startForegroundService(intent)
         } else if (uiState.value.sessionState == SessionState.PAUSED) {
             startPauseTimer()
         }
@@ -306,12 +311,12 @@ class FocusViewModel(
     }
 
     private fun sendServiceCommand(isFinished: Boolean) {
-        val intent = Intent(getApplication(), FocusService::class.java).apply {
+        val intent = Intent(context, FocusService::class.java).apply {
             action = FocusService.ACTION_STOP
             putExtra(FocusService.EXTRA_IS_FINISHED, isFinished)
         }
         // Use startService, not startForegroundService, when stopping the service
-        getApplication<Application>().startService(intent)
+        context.startService(intent)
     }
 
     fun toggleFocusSession() {

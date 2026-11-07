@@ -1,13 +1,14 @@
 package com.example.zenith.ui.screens.statistics
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.zenith.data.AppDatabase
+import com.example.zenith.data.DistractionEventDao
 import com.example.zenith.data.FocusSession
+import com.example.zenith.data.FocusSessionDao
 import com.example.zenith.ui.common.UiStateMachine
 import com.example.zenith.ui.common.asUiStateMachine
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
@@ -15,19 +16,18 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import javax.inject.Inject
 
-class StatisticsViewModel(
-    application: Application,
+@HiltViewModel
+class StatisticsViewModel @Inject constructor(
+    private val sessionDao: FocusSessionDao,
+    private val distractionDao: DistractionEventDao,
     savedState: SavedStateHandle
-) : AndroidViewModel(application) {
+) : ViewModel() {
     private val uiStateMachine: UiStateMachine<StatisticsUIState> =
         savedState.asUiStateMachine(StatisticsUIState())
 
     val uiState: StateFlow<StatisticsUIState> by uiStateMachine
-
-    private val db = AppDatabase.getDatabase(application)
-    private val sessionDao = db.focusSessionDao()
-    private val distractionDao = db.distractionEventDao()
 
     init {
         observeDatabase()

@@ -53,7 +53,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.zenith.logic.FocusMath
 import com.example.zenith.ui.theme.MutedGray
 import com.example.zenith.ui.theme.OffWhite
@@ -66,7 +65,7 @@ import kotlin.math.sin
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
+fun FocusScreen(viewModel: FocusViewModel) {
 
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -352,10 +351,9 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                                             val pressStartTime = System.currentTimeMillis()
                                             isHolding = true
                                             try { tryAwaitRelease() } finally {
-                                                isHolding = false
                                                 val holdDuration = System.currentTimeMillis() - pressStartTime
-                                                if (holdDuration >= 3000) viewModel.abandonSession()
-                                                else if (holdDuration < 300) viewModel.toggleFocusSession()
+                                                isHolding = false
+                                                if (holdDuration < 300) viewModel.toggleFocusSession()
                                                 pressingProgress = 0f
                                             }
                                         }
@@ -369,7 +367,11 @@ fun FocusScreen(viewModel: FocusViewModel = viewModel()) {
                                 val start = System.currentTimeMillis()
                                 while (isHolding) {
                                     pressingProgress = (System.currentTimeMillis() - start) / 3000f
-                                    if (pressingProgress >= 1f) { viewModel.abandonSession(); isHolding = false; break }
+                                    if (pressingProgress >= 1f) {
+                                        viewModel.abandonSession()
+                                        isHolding = false
+                                        break
+                                    }
                                     delay(16)
                                 }
                             } else pressingProgress = 0f
