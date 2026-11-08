@@ -62,6 +62,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -142,7 +143,7 @@ fun FocusScreen(viewModel: FocusViewModel) {
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
                         textStyle = TextStyle(
-                            color = Color.White,
+                            color = OffWhite.copy(0.7f),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Medium
                         ),
@@ -150,10 +151,14 @@ fun FocusScreen(viewModel: FocusViewModel) {
                         modifier = Modifier.fillMaxWidth(),
                         decorationBox = { innerTextField ->
                             if (state.missionText.isEmpty()) {
-                                Text(
-                                    text = "What are you focusing on?",
-                                    color = OffWhite.copy(0.2f),
-                                    style = MaterialTheme.typography.bodyLarge
+                                TypewriterPlaceHolder(
+                                    suggestions = listOf(
+                                        "Read a book...",
+                                        "Finish the report...",
+                                        "Write some code...",
+                                        "Study for exams..."
+                                    ),
+                                    color = OffWhite.copy(0.5f)
                                 )
                             }
                             innerTextField()
@@ -210,7 +215,7 @@ fun FocusScreen(viewModel: FocusViewModel) {
                 val total = state.totalFocusSeconds
                 
                 val progress = if (total > 0) ((total - remaining).toFloat() / total).coerceIn(0f, 1f) else 0f
-                val debtProgress = if (total > 0 && remaining > total) ((remaining - total).toFloat() / total).coerceIn(0f, 1f) else 0f
+                val debtProgress = if (total in 1..<remaining) ((remaining - total).toFloat() / total).coerceIn(0f, 1f) else 0f
                 
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     val center = Offset(size.width / 2, size.height / 2)
@@ -372,7 +377,7 @@ fun FocusScreen(viewModel: FocusViewModel) {
                                         isHolding = false
                                         break
                                     }
-                                    delay(16)
+                                    delay(16.milliseconds)
                                 }
                             } else pressingProgress = 0f
                         }
