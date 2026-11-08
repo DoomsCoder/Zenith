@@ -67,14 +67,6 @@ class MainActivity : ComponentActivity() {
                 @Suppress("UNCHECKED_CAST")
                 val backStack = navKeyBackStack as NavBackStack<Destination>
 
-                val focusViewModel: FocusViewModel = hiltViewModel()
-
-                val statsViewModel: StatisticsViewModel = hiltViewModel()
-
-                val settingsViewModel: SettingsViewModel = hiltViewModel()
-
-                val whitelistViewModel: WhitelistViewModel = hiltViewModel()
-
                 val currentDestination = backStack.last()
                 val showBars = currentDestination.showSystemBars
 
@@ -121,9 +113,9 @@ class MainActivity : ComponentActivity() {
                     ) { key ->
                         NavEntry(key) {
                             when (key) {
-                                Destination.Focus -> FocusScreen(viewModel = focusViewModel)
+                                Destination.Focus -> FocusScreen(viewModel = hiltViewModel())
                                 Destination.Stats -> StatisticsScreen(
-                                    viewModel = statsViewModel,
+                                    viewModel = hiltViewModel(),
                                     onNavigateToHistory = { backStack.add(Destination.SessionHistory) },
                                     onNavigateToFocus = {
                                         backStack.clear()
@@ -145,36 +137,36 @@ class MainActivity : ComponentActivity() {
                                 )
                                 Destination.EngineConfig -> {
                                     EngineConfigScreen(
-                                        viewModel = settingsViewModel,
+                                        viewModel = hiltViewModel(),
                                         onBack = { backStack.remove(Destination.EngineConfig)}
                                     )
                                 }
                                 Destination.Roasts -> {
                                     RoastSettingsScreen(
-                                        viewModel = settingsViewModel,
+                                        viewModel = hiltViewModel(),
                                         onBack = { backStack.remove(Destination.Roasts) }
                                     )
                                 }
                                 Destination.Sensory -> {
                                     SensorySettingsScreen(
-                                        viewModel = settingsViewModel,
+                                        viewModel = hiltViewModel(),
                                         onBack = { backStack.remove(Destination.Sensory) }
                                     )
                                 }
                                 Destination.DataPrivacy -> {
                                     DataPrivacyScreen(
-                                        viewModel = settingsViewModel,
+                                        viewModel = hiltViewModel(),
                                         onBack = { backStack.remove(Destination.DataPrivacy) }
                                     )
                                 }
                                 Destination.Whitelist -> {
                                     WhitelistManagerScreen(
-                                        viewModel = whitelistViewModel,
+                                        viewModel = hiltViewModel(),
                                         onBack = { backStack.remove(Destination.Whitelist) }
                                     )
                                 }
                                 Destination.SessionHistory -> SessionHistoryScreen(
-                                    viewModel = statsViewModel,
+                                    viewModel = hiltViewModel(),
                                     onBackClick = { backStack.remove(Destination.SessionHistory) }
                                 )
                                 Destination.AboutZenith -> AboutZenithScreen(
