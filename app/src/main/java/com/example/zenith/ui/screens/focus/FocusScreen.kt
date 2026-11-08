@@ -327,15 +327,25 @@ fun FocusScreen(viewModel: FocusViewModel) {
 
             Spacer(modifier = Modifier.height(32.dp))
 
+            val isPauseBankExhausted = state.sessionState == SessionState.RUNNING && state.isBreakAllowanceSet && state.remainingBreakBankSeconds <= 0
             val isIntentClear = isHolding && pressingProgress > 0.03f
+            
             val buttonText = when (state.sessionState) {
                 SessionState.IDLE -> "Initiate focus session"
-                SessionState.RUNNING -> if (pressingProgress > 0.15f) "Hold to abandon..." else "Pause session"
+                SessionState.RUNNING -> if (pressingProgress > 0.15f) "Hold to abandon..." else if (isPauseBankExhausted) "Pause exhausted" else "Pause session"
                 SessionState.PAUSED -> if (pressingProgress > 0.15f) "Hold to abandon..." else "Resume session"
                 SessionState.FINISHED, SessionState.ABANDONED -> "Initiate focus session"
             }
 
-            val syncedButtonColor by animateColorAsState(targetValue = if (isIntentClear) Color(0xFF2A2A2A) else SoftIndigo, animationSpec = tween(150), label = "ButtonColor")
+            val syncedButtonColor by animateColorAsState(
+                targetValue = when {
+                    isIntentClear -> Color(0xFF2A2A2A)
+                    isPauseBankExhausted -> MutedGray.copy(0.4f)
+                    else -> SoftIndigo
+                }, 
+                animationSpec = tween(150), 
+                label = "ButtonColor"
+            )
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 PauseLabelPill(secondsRemaining = state.remainingBreakBankSeconds, isVisible = state.sessionState == SessionState.PAUSED && state.isBreakAllowanceSet)
@@ -358,7 +368,9 @@ fun FocusScreen(viewModel: FocusViewModel) {
                                             try { tryAwaitRelease() } finally {
                                                 val holdDuration = System.currentTimeMillis() - pressStartTime
                                                 isHolding = false
-                                                if (holdDuration < 300) viewModel.toggleFocusSession()
+                                                if (holdDuration < 300 && !isPauseBankExhausted) {
+                                                    viewModel.toggleFocusSession()
+                                                }
                                                 pressingProgress = 0f
                                             }
                                         }
