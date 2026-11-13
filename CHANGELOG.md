@@ -5,6 +5,21 @@ All notable changes to the Zenith project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Dependency Injection:** Full architectural migration to Dagger Hilt for robust dependency management across ViewModels, Repositories, DAOs, and Foreground Services.
+- **Dynamic Typewriter Placeholder:** Implemented an animated typewriter effect for the focus mission input field, improving UX by cycling through contextual suggestions.
+- **Exhausted Pause State UI:** Enhanced UI feedback for the break bank system. The pause button now animates to disabled grey and updates text to "Pause exhausted" when break time reaches zero, preventing illegal pauses while still allowing long-press abandonment.
+- **Cloud Analytics:** Integrated Firebase Analytics for tracking anonymized app usage and stability metrics without compromising core privacy.
+
+### Changed
+- Converted all ViewModels to utilize `@HiltViewModel` for strict dependency scoping.
+- Refactored `FocusService` logic to utilize field injection with `@AndroidEntryPoint`.
+- Upgraded `MainActivity` navigation rendering for automatic ViewModel creation.
+
+---
+
 ## [1.0.0-beta] - 2026-08-22
 
 ### Added

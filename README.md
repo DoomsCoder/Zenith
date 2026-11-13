@@ -8,9 +8,12 @@
 
   [![Kotlin](https://img.shields.io/badge/Kotlin-2.1.0-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
   [![Jetpack Compose](https://img.shields.io/badge/Compose-Latest-4285F4?logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
+  [![Hilt DI](https://img.shields.io/badge/Hilt-2.55-green?logo=android&logoColor=white)](https://dagger.dev/hilt/)
   [![Material 3](https://img.shields.io/badge/Material%203-Latest-757575?logo=materialdesign&logoColor=white)](https://m3.material.io/)
+  [![Firebase](https://img.shields.io/badge/Firebase-Analytics-FFCA28?logo=firebase&logoColor=black)](https://firebase.google.com/)
   [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
   [![Changelog](https://img.shields.io/badge/Changelog-v1.0.0--beta-orange)](CHANGELOG.md)
+  [![XERJ Corpus Hub contributor](https://hub.xerj.org/contributors/DoomsCoder/badge.svg)](https://hub.xerj.org/contributors/DoomsCoder)
 
   ![Focus Timer Demo](screenshots/focus-timer-demo.gif)
 
@@ -58,14 +61,16 @@ Built on a Single Source of Truth (SSOT) principle. The UI, Foreground Service, 
 Real-time data visualization using the Vico Cartesian Library. Track your missions, violations, and Focus Score trends with high-fidelity charts.
 
 ### Data Privacy Protocol
-Zenith operates as a Closed-Loop System. Telemetry never leaves local encrypted storage. No cloud hooks. No external tracking. Zero data leakage.
+Zenith prioritizes user privacy. Core focus telemetry, including missions and violations, is stored in a local encrypted Room database. The only external connection is Firebase Analytics, which is strictly used to collect anonymized, non-identifiable usage statistics to help improve the app's performance and stability. Zero personal telemetry leaves your device.
 
 ## Tech Stack
 - Languages: Kotlin 2.1.0 + Coroutines/Flow
+- Dependency Injection: Dagger Hilt
 - UI: Jetpack Compose (Material 3, Custom Canvas)
 - Persistence: Room (SQL with complex analytical queries)
 - Engine: Android Foreground Services (Special Use type)
 - Analytics: UsageStatsManager + Accelerometer Sensor Telemetry
+- Cloud Services: Firebase Analytics (Anonymized usage tracking)
 - Animation: Android 12+ SplashScreen API
 
 ## Getting Started
